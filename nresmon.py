@@ -41,7 +41,8 @@ def szfill(num: int | float | str, before_dot: int = 2) -> str:
 window = pyglet.window.Window(
     width     = 850,
     height    = 600,
-    resizable = False
+    resizable = False,
+    caption = 'NeedySystemOverdose'
 )
 
 
