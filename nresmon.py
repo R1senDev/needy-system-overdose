@@ -64,6 +64,7 @@ def get_absolute_cursor_position() -> list[int]:
     return [point.x, point.y]
 
 
+screen = pyglet.canvas.Display().get_default_screen()
 window = pyglet.window.Window(
     width     = BASE_WINDOW_WIDTH,
     height    = 670,
@@ -71,6 +72,8 @@ window = pyglet.window.Window(
     style     = 'borderless',
     caption   = 'NeedySystemOverdose'
 )
+
+window.set_location(screen.width // 2 - WIDE_WINDOW_WIDTH // 2, screen.height // 2 - window.height // 2)
 
 
 bg_batch             = pyglet.graphics.Batch()
@@ -362,7 +365,7 @@ ram_label = pyglet.text.Label(
     batch     = fg_batch
 )
 disk_title = pyglet.text.Label(
-    text      = f'Used disk space ({ascii_uppercase[settings['disk_index']]}:)',
+    text      = f'Used disk space ({ascii_uppercase[settings["disk_index"]]}:)',
     font_name = 'Press Start 2P',
     font_size = 16,
     color     = (255, 51, 201, 255),
@@ -453,8 +456,8 @@ def on_draw():
     cpu_label.text = system_info['cpu']
     ram_label.text = system_info['ram']
     if forced_c_selection: disk_title.text = 'Used disk space (C:)'
-    else: disk_title.text = f'Used disk space ({ascii_uppercase[settings['disk_index']]}:)'
-    disk_setting_letter.text = f'{ascii_uppercase[settings['disk_index']]}:'
+    else: disk_title.text = f'Used disk space ({ascii_uppercase[settings["disk_index"]]}:)'
+    disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
     disk_label.text = system_info['disk']
 
     bg_batch.draw()
@@ -503,7 +506,7 @@ def system_info_updater():
         system_info['ram'] = f'{szfill(round(virtual_memory().percent, 1))}%'
 
         try:
-            c_usage = disk_usage(f'{ascii_uppercase[settings['disk_index']]}:\\')
+            c_usage = disk_usage(f'{ascii_uppercase[settings["disk_index"]]}:\\')
             forced_c_selection = False
         except (FileNotFoundError, PermissionError):
             c_usage = disk_usage('C:\\')
