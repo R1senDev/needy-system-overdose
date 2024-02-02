@@ -64,6 +64,11 @@ cpu_usage_anim  = pyglet.image.load_animation('sprites/anger_anim.gif')
 ram_usage_anim  = pyglet.image.load_animation('sprites/heart_anim.gif')
 disk_usage_anim = pyglet.image.load_animation('sprites/tiredness_anim.gif')
 
+icon32_img  = pyglet.image.load('sprites/icon32.png')
+icon64_img  = pyglet.image.load('sprites/icon64.png')
+icon128_img = pyglet.image.load('sprites/icon128.png')
+window.set_icon(icon32_img, icon64_img, icon128_img)
+
 bg_tile_img  = pyglet.image.load('sprites/bg_tile.png')
 bg_tiles = [[pyglet.sprite.Sprite(bg_tile_img, x * bg_tile_img.width, y * bg_tile_img.height, batch = bg_batch) for x in range((1350 // bg_tile_img.width) + 2)] for y in range((window.height // bg_tile_img.height) + 1)]
 
