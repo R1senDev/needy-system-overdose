@@ -28,6 +28,7 @@ default_settings = {
     'shorter_update_interval': False,
     'enable_bg_animation': False,
     'blocks_transparency': 255,
+    'disk_space_variant': 'used',
 }
 try:
     makedirs(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\')
@@ -154,6 +155,9 @@ def set_blocks_transparency(state):
 def set_shorter_update_interval(state):
     settings['shorter_update_interval'] = state
     save_settings()
+def set_disk_space_variant_to_free(state):
+    settings['disk_space_variant'] = 'free' if state else 'used'
+    save_settings()
 def on_disk_nav_left():
     if settings['disk_index'] > 0: settings['disk_index'] -= 1
     else: settings['disk_index'] = 25
@@ -207,16 +211,17 @@ class Button:
 
 
 ui = {
-    'window_close_button':     Button(window.width - 60,  window.height - 60, window.close, ui_close_img),
-    'window_minimize_button':  Button(window.width - 110, window.height - 60, window.minimize, ui_minimize_img),
-    'settings_toggle_button':  Button(790,  20,  toggle_settings, ui_settings_img),
-    'github_link':             Button(1290, 610, open_github_repo, ui_link_img),
-    'animations_switch':       Switch(860,  540, set_animations_enabled, settings['enable_animations']),
-    'bg_animation_switch':     Switch(860,  490, set_bg_animation_enabled, settings['enable_bg_animation']),
-    'transparency_switch':     Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
-    'disk_selector_nav_left':  Button(910,  340, on_disk_nav_left, ui_nav_left_img),
-    'disk_selector_nav_right': Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
-    'update_interval_switch':  Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
+    'window_close_button':       Button(window.width - 60,  window.height - 60, window.close, ui_close_img),
+    'window_minimize_button':    Button(window.width - 110, window.height - 60, window.minimize, ui_minimize_img),
+    'settings_toggle_button':    Button(790,  20,  toggle_settings, ui_settings_img),
+    'github_link':               Button(1290, 610, open_github_repo, ui_link_img),
+    'animations_switch':         Switch(860,  540, set_animations_enabled, settings['enable_animations']),
+    'bg_animation_switch':       Switch(860,  490, set_bg_animation_enabled, settings['enable_bg_animation']),
+    'transparency_switch':       Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
+    'disk_selector_nav_left':    Button(910,  340, on_disk_nav_left, ui_nav_left_img),
+    'disk_selector_nav_right':   Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
+    'update_interval_switch':    Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
+    'disk_space_variant_switch': Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
 }
 
 window_title = pyglet.text.Label(
@@ -312,6 +317,26 @@ update_interval_label_2 = pyglet.text.Label(
     anchor_y  = 'center',
     batch     = fg_batch
 )
+show_free_space_label_1 = pyglet.text.Label(
+    text      = 'Show free disk space',
+    font_name = 'Press Start 2P',
+    font_size = 16,
+    color     = (255, 0, 201, 255),
+    x         = 910,
+    y         = 220,
+    anchor_y  = 'center',
+    batch     = fg_batch
+)
+show_free_space_label_2 = pyglet.text.Label(
+    text      = 'instead of used',
+    font_name = 'Press Start 2P',
+    font_size = 16,
+    color     = (255, 0, 201, 255),
+    x         = 910,
+    y         = 190,
+    anchor_y  = 'center',
+    batch     = fg_batch
+)
 
 uptime_title = pyglet.text.Label(
     text      = 'Uptime',
@@ -371,7 +396,7 @@ ram_label = pyglet.text.Label(
     batch     = fg_batch
 )
 disk_title = pyglet.text.Label(
-    text      = f'Used disk space ({ascii_uppercase[settings["disk_index"]]}:)',
+    text      = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)',
     font_name = 'Press Start 2P',
     font_size = 16,
     color     = (255, 51, 201, 255),
@@ -462,7 +487,7 @@ def on_draw():
     cpu_label.text = system_info['cpu']
     ram_label.text = system_info['ram']
     if forced_c_selection: disk_title.text = 'Used disk space (C:)'
-    else: disk_title.text = f'Used disk space ({ascii_uppercase[settings["disk_index"]]}:)'
+    else: disk_title.text = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)'
     disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
     disk_label.text = system_info['disk']
 
@@ -517,7 +542,10 @@ def system_info_updater():
         except (FileNotFoundError, PermissionError):
             c_usage = disk_usage('C:\\')
             forced_c_selection = True
-        system_info['disk'] = f'{szfill(round(c_usage.used / c_usage.total * 100, 1))}%'
+        if settings['disk_space_variant'] == 'used':
+            system_info['disk'] = f'{szfill(round(c_usage.used / c_usage.total * 100, 1))}%'
+        else:
+            system_info['disk'] = f'{szfill(round(c_usage.free / c_usage.total * 100, 1))}%'
 
         sleep(0.5 if settings['shorter_update_interval'] else 1)
 
