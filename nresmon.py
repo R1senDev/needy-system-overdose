@@ -34,6 +34,7 @@ except OSError:
 
 def szfill(num: int | float | str, before_dot: int = 2) -> str:
     num = str(num)
+    if '100' in num.split('.'): return '100 '
     while len(num.split('.')[0]) < before_dot: num = f'0{num}'
     return num
 
@@ -42,7 +43,7 @@ window = pyglet.window.Window(
     width     = 850,
     height    = 600,
     resizable = False,
-    caption = 'NeedySystemOverdose'
+    caption   = 'NeedySystemOverdose'
 )
 
 
@@ -239,7 +240,7 @@ uptime_title = pyglet.text.Label(
     text      = 'Uptime',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 51, 201, 255),
     x         = 200,
     y         = 570,
     anchor_y  = 'top',
@@ -258,7 +259,7 @@ cpu_title = pyglet.text.Label(
     text      = 'CPU usage',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 51, 201, 255),
     x         = 200,
     y         = 430,
     anchor_y  = 'top',
@@ -277,7 +278,7 @@ ram_title = pyglet.text.Label(
     text      = 'RAM usage',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 51, 201, 255),
     x         = 200,
     y         = 290,
     anchor_y  = 'top',
@@ -296,7 +297,7 @@ disk_title = pyglet.text.Label(
     text      = f'Used disk space ({ascii_uppercase[settings['disk_index']]}:)',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 51, 201, 255),
     x         = 200,
     y         = 150,
     anchor_y  = 'top',
@@ -383,7 +384,7 @@ def system_info_updater():
 
     while not pyglet.app.event_loop.is_running:
         print('pyglet evloop isn\'t running')
-        sleep(50)
+        sleep(0.02)
     while pyglet.app.event_loop.is_running:
 
         seconds_uptime = kernel32.GetTickCount64()
