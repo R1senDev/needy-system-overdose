@@ -1,4 +1,5 @@
 from webbrowser import open as open_url
+from traceback  import format_exc
 from threading  import Thread
 from getpass    import getuser
 from psutil     import cpu_percent, virtual_memory, disk_usage
@@ -63,15 +64,20 @@ def get_absolute_cursor_position() -> list[int]:
     windll.user32.GetCursorPos(byref(point))
     return [point.x, point.y]
 
-
-screen = pyglet.canvas.Display().get_default_screen()
-window = pyglet.window.Window(
-    width     = BASE_WINDOW_WIDTH,
-    height    = 670,
-    resizable = False,
-    style     = 'borderless',
-    caption   = 'NeedySystemOverdose'
-)
+try:
+    screen = pyglet.canvas.Display().get_default_screen()
+    window = pyglet.window.Window(
+        width     = BASE_WINDOW_WIDTH,
+        height    = 670,
+        resizable = False,
+        style     = 'borderless',
+        caption   = 'NeedySystemOverdose'
+    )
+except Exception:
+    print('Oh no! It seems that you have an outdated driver (for example, the Intel HD Graphics 2016). Full traceback is in the crash.log file.')
+    with open('crash.log', 'w') as crash_log:
+        crash_log.write(format_exc())
+    exit()
 
 window.set_location(screen.width // 2 - WIDE_WINDOW_WIDTH // 2, screen.height // 2 - window.height // 2)
 
