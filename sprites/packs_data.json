@@ -1,0 +1,38 @@
+[
+    {
+        "uptime": {
+            "static": "device.png",
+            "animated": "device_anim.gif"
+        },
+        "cpu": {
+            "static": "anger.png",
+            "animated": "anger_anim.gif"
+        },
+        "ram": {
+            "static": "heart.png",
+            "animated": "heart_anim.gif"
+        },
+        "disk": {
+            "static": "tiredness.png",
+            "animated": "tiredness_anim.gif"
+        }
+    },
+    {
+        "uptime": {
+            "static": "crying.png",
+            "animated": "crying_anim.gif"
+        },
+        "cpu": {
+            "static": "anger.png",
+            "animated": "anger_anim.gif"
+        },
+        "ram": {
+            "static": "shine.png",
+            "animated": "shine_anim.gif"
+        },
+        "disk": {
+            "static": "tiredness.png",
+            "animated": "tiredness_anim.gif"
+        }
+    }
+]

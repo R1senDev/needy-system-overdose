@@ -6,6 +6,7 @@ from psutil     import cpu_percent, virtual_memory, disk_usage
 from string     import ascii_uppercase
 from typing     import Callable
 from ctypes     import windll, Structure, c_long, byref
+from random     import choice
 from json       import load, dump
 from time       import sleep
 from os         import makedirs
@@ -39,6 +40,7 @@ default_settings = {
     'enable_bg_animation': False,
     'blocks_transparency': 255,
     'disk_space_variant': 'used',
+    'random_sprites_pack': False,
 }
 try:
     makedirs(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\')
@@ -54,6 +56,9 @@ except OSError:
             with open(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\settings.json', 'w') as file:
                 dump(default_settings, file)
             break
+
+with open('sprites/packs_data.json', 'r') as packs_data_file:
+    packs_data = load(packs_data_file)
 
 
 def szfill(num: int | float | str, before_dot: int = 2) -> str:
@@ -101,14 +106,17 @@ anim_character_batch = pyglet.graphics.Batch()
 pyglet.font.add_directory('fonts/')
 press_start_2p_font = pyglet.font.load('Press Start 2P')
 
-uptime_img      = pyglet.image.load('sprites/device.png')
-cpu_usage_img   = pyglet.image.load('sprites/anger.png')
-ram_usage_img   = pyglet.image.load('sprites/heart.png')
-disk_usage_img  = pyglet.image.load('sprites/tiredness.png')
-uptime_anim     = pyglet.image.load_animation('sprites/device_anim.gif')
-cpu_usage_anim  = pyglet.image.load_animation('sprites/anger_anim.gif')
-ram_usage_anim  = pyglet.image.load_animation('sprites/heart_anim.gif')
-disk_usage_anim = pyglet.image.load_animation('sprites/tiredness_anim.gif')
+if settings['random_sprites_pack']: pack = choice(packs_data)
+else: pack = packs_data[0]
+
+uptime_img      = pyglet.image.load(f'sprites/characters/{pack["uptime"]["static"]}')
+cpu_usage_img   = pyglet.image.load(f'sprites/characters/{pack["cpu"]["static"]}')
+ram_usage_img   = pyglet.image.load(f'sprites/characters/{pack["ram"]["static"]}')
+disk_usage_img  = pyglet.image.load(f'sprites/characters/{pack["disk"]["static"]}')
+uptime_anim     = pyglet.image.load_animation(f'sprites/characters/{pack["uptime"]["animated"]}')
+cpu_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{pack["cpu"]["animated"]}')
+ram_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{pack["ram"]["animated"]}')
+disk_usage_anim = pyglet.image.load_animation(f'sprites/characters/{pack["disk"]["animated"]}')
 
 icon32_img  = pyglet.image.load('sprites/icon32.png')
 icon64_img  = pyglet.image.load('sprites/icon64.png')
@@ -167,6 +175,9 @@ def set_shorter_update_interval(state):
     save_settings()
 def set_disk_space_variant_to_free(state):
     settings['disk_space_variant'] = 'free' if state else 'used'
+    save_settings()
+def set_randomize_sprites_packs(state):
+    settings['random_sprites_pack'] = state
     save_settings()
 def on_disk_nav_left():
     if settings['disk_index'] > 0: settings['disk_index'] -= 1
@@ -255,17 +266,18 @@ class Button:
 
 
 ui = {
-    'window_close_button':       Button(window.width - 60,  window.height - 60, window.close, ui_close_img),
-    'window_minimize_button':    Button(window.width - 110, window.height - 60, window.minimize, ui_minimize_img),
-    'settings_toggle_button':    Button(790,  20,  toggle_settings, ui_settings_img),
-    'github_link':               Button(1290, 610, open_github_repo, ui_link_img),
-    'animations_switch':         Switch(860,  540, set_animations_enabled, settings['enable_animations']),
-    'bg_animation_switch':       Switch(860,  490, set_bg_animation_enabled, settings['enable_bg_animation']),
-    'transparency_switch':       Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
-    'disk_selector_nav_left':    Button(910,  340, on_disk_nav_left, ui_nav_left_img),
-    'disk_selector_nav_right':   Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
-    'update_interval_switch':    Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
-    'disk_space_variant_switch': Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
+    'window_close_button':        Button(BASE_WINDOW_WIDTH - 60,  window.height - 60, window.close, ui_close_img),
+    'window_minimize_button':     Button(BASE_WINDOW_WIDTH - 110, window.height - 60, window.minimize, ui_minimize_img),
+    'settings_toggle_button':     Button(790,  20,  toggle_settings, ui_settings_img),
+    'github_link':                Button(1290, 610, open_github_repo, ui_link_img),
+    'animations_switch':          Switch(860,  540, set_animations_enabled, settings['enable_animations']),
+    'bg_animation_switch':        Switch(860,  490, set_bg_animation_enabled, settings['enable_bg_animation']),
+    'transparency_switch':        Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
+    'disk_selector_nav_left':     Button(910,  340, on_disk_nav_left, ui_nav_left_img),
+    'disk_selector_nav_right':    Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
+    'update_interval_switch':     Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
+    'disk_space_variant_switch':  Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
+    'random_sprites_pack_switch': Switch(860,  120, set_randomize_sprites_packs, settings['random_sprites_pack']),
 }
 
 other_elements = {
@@ -283,6 +295,18 @@ window_title = pyglet.text.Label(
     x         = 94,
     y         = window.height - 40,
     anchor_y  = 'center',
+    batch     = fg_batch
+)
+window_title_version = pyglet.text.Label(
+    text      = 'v1.2.0b',
+    font_name = 'Press Start 2P',
+    font_size = 10,
+    # italic    = True,
+    color     = COL_PINK_TEXT,
+    x         = BASE_WINDOW_WIDTH - 120,
+    y         = window.height - 60,
+    anchor_x  = 'right',
+    anchor_y  = 'bottom',
     batch     = fg_batch
 )
 
@@ -384,6 +408,16 @@ show_free_space_label_2 = pyglet.text.Label(
     color     = (255, 0, 201, 255),
     x         = 910,
     y         = 190,
+    anchor_y  = 'center',
+    batch     = fg_batch
+)
+randomize_packs_label = pyglet.text.Label(
+    text      = 'Random sprites pack',
+    font_name = 'Press Start 2P',
+    font_size = 16,
+    color     = (255, 0, 201, 255),
+    x         = 910,
+    y         = 140,
     anchor_y  = 'center',
     batch     = fg_batch
 )
