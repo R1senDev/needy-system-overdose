@@ -4,4 +4,4 @@ A fancy Python resource monitor for Windows (which, theoretically, should refer 
 
 Maybe in the future I will come up with a couple more apps in this style. I really like this style, yes.
 
-[![Screenshot should be here?](https://i.stack.imgur.com/ANwal.png)](https://i.stack.imgur.com/ANwal.png)
+[![Screenshot should be here?](https://i.stack.imgur.com/TRiQv.png)](https://i.stack.imgur.com/TRiQv.png)

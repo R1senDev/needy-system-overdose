@@ -15,6 +15,16 @@ import pyglet
 WIDE_WINDOW_WIDTH = 1350
 BASE_WINDOW_WIDTH = 850
 
+CPU_PBAR_WARN  = 0.85
+RAM_PBAR_WARN  = 0.85
+DISK_PBAR_WARN = 0.9
+
+COL_LIGHT_PINK_BG = (255, 201, 201, 255)
+COL_PINK_TEXT     = (255, 51,  201, 255)
+COL_ACCENT        = (255, 153, 201, 255)
+COL_PBAR_FILL     = (255, 0,   201, 255)
+COL_PBAR_WARN     = (255, 0,   102, 255)
+
 dragging_window = [False, 0, 0]
 settings_shown = False
 forced_c_selection = False
@@ -170,6 +180,40 @@ def open_github_repo():
     open_url('https://github.com/R1senDev/needy-system-overdose', 2)
 
 
+class Progress:
+
+    def __init__(self, x: int, y: int, w: int, h: int, bg_color: tuple[int, int, int, int] = (255, 255, 255, 255), fill_color: tuple[int, int, int, int] = (0, 255, 0, 255), progress: float = 0.0):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.bg_color = bg_color
+        self.fill_color = fill_color
+        self.progress = progress
+
+        self.bg_rect = pyglet.shapes.Rectangle(
+            x      = self.x,
+            y      = self.y,
+            width  = self.w,
+            height = self.h,
+            color  = self.bg_color,
+            batch  = fg_batch
+        )
+        self.fill_rect = pyglet.shapes.Rectangle(
+            x      = self.x,
+            y      = self.y,
+            width  = round(self.w * self.progress),
+            height = self.h,
+            color  = self.fill_color,
+            batch  = fg_batch
+        )
+
+    def update_progress(self, progress):
+        self.fill_rect.width = round(self.w * progress)
+
+    def update_fill_color(self, color):
+        self.fill_rect.color = color
+
 class Switch:
 
     def __init__(self, x: int, y: int, on_switch: Callable, state: bool = False) -> None:
@@ -222,6 +266,12 @@ ui = {
     'disk_selector_nav_right':   Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
     'update_interval_switch':    Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
     'disk_space_variant_switch': Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
+}
+
+other_elements = {
+    'cpu_progress':  Progress(200, 320, 325, 10, COL_ACCENT, COL_PBAR_FILL),
+    'ram_progress':  Progress(200, 180, 325, 10, COL_ACCENT, COL_PBAR_FILL),
+    'disk_progress': Progress(200, 40,  325, 10, COL_ACCENT, COL_PBAR_FILL),
 }
 
 window_title = pyglet.text.Label(
@@ -342,7 +392,7 @@ uptime_title = pyglet.text.Label(
     text      = 'Uptime',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 51, 201, 255),
+    color     = COL_PINK_TEXT,
     x         = 200,
     y         = 570,
     anchor_y  = 'top',
@@ -361,7 +411,7 @@ cpu_title = pyglet.text.Label(
     text      = 'CPU usage',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 51, 201, 255),
+    color     = COL_PINK_TEXT,
     x         = 200,
     y         = 430,
     anchor_y  = 'top',
@@ -380,7 +430,7 @@ ram_title = pyglet.text.Label(
     text      = 'RAM usage',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 51, 201, 255),
+    color     = COL_PINK_TEXT,
     x         = 200,
     y         = 290,
     anchor_y  = 'top',
@@ -399,7 +449,7 @@ disk_title = pyglet.text.Label(
     text      = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 51, 201, 255),
+    color     = COL_PINK_TEXT,
     x         = 200,
     y         = 150,
     anchor_y  = 'top',
@@ -420,7 +470,7 @@ bg_resmon_header = pyglet.shapes.Rectangle(
     y      = window.height - 70,
     width  = 830,
     height = 60,
-    color  = (255, 201, 201, 255),
+    color  = COL_LIGHT_PINK_BG,
     batch  = bg_batch
 )
 bg_resmon_main = pyglet.shapes.Rectangle(
@@ -428,7 +478,7 @@ bg_resmon_main = pyglet.shapes.Rectangle(
     y      = 10,
     width  = 830,
     height = 580,
-    color  = (255, 201, 201, 255),
+    color  = COL_LIGHT_PINK_BG,
     batch  = bg_batch
 )
 bg_resmon_info = pyglet.shapes.Rectangle(
@@ -436,7 +486,7 @@ bg_resmon_info = pyglet.shapes.Rectangle(
     y      = window.height - 70,
     width  = 490,
     height = 60,
-    color  = (255, 201, 201, 255),
+    color  = COL_LIGHT_PINK_BG,
     batch  = bg_batch
 )
 bg_resmon_settings = pyglet.shapes.Rectangle(
@@ -444,7 +494,7 @@ bg_resmon_settings = pyglet.shapes.Rectangle(
     y      = 10,
     width  = 490,
     height = 580,
-    color  = (255, 201, 201, 255),
+    color  = COL_LIGHT_PINK_BG,
     batch  = bg_batch
 )
 
@@ -532,9 +582,17 @@ def system_info_updater():
         hour, mins = divmod(mins, 60)
         system_info['uptime'] = f'{hour:02}:{mins:02}:{sec:02}'
 
-        system_info['cpu'] = f'{szfill(round(cpu_percent(), 1))}%'
+        cpu_usage = cpu_percent()
+        system_info['cpu'] = f'{szfill(round(cpu_usage, 1))}%'
+        other_elements['cpu_progress'].update_progress(cpu_usage / 100)
+        if cpu_usage / 100 >= CPU_PBAR_WARN: other_elements['cpu_progress'].update_fill_color(COL_PBAR_WARN)
+        else: other_elements['cpu_progress'].update_fill_color(COL_PBAR_FILL)
 
-        system_info['ram'] = f'{szfill(round(virtual_memory().percent, 1))}%'
+        vmem_usage = virtual_memory().percent
+        system_info['ram'] = f'{szfill(round(vmem_usage, 1))}%'
+        other_elements['ram_progress'].update_progress(vmem_usage / 100)
+        if vmem_usage / 100 >= RAM_PBAR_WARN: other_elements['ram_progress'].update_fill_color(COL_PBAR_WARN)
+        else: other_elements['ram_progress'].update_fill_color(COL_PBAR_FILL)
 
         try:
             c_usage = disk_usage(f'{ascii_uppercase[settings["disk_index"]]}:\\')
@@ -546,6 +604,9 @@ def system_info_updater():
             system_info['disk'] = f'{szfill(round(c_usage.used / c_usage.total * 100, 1))}%'
         else:
             system_info['disk'] = f'{szfill(round(c_usage.free / c_usage.total * 100, 1))}%'
+        other_elements['disk_progress'].update_progress(c_usage.used / c_usage.total)
+        if c_usage.used / c_usage.total >= DISK_PBAR_WARN: other_elements['disk_progress'].update_fill_color(COL_PBAR_WARN)
+        else: other_elements['disk_progress'].update_fill_color(COL_PBAR_FILL)
 
         sleep(0.5 if settings['shorter_update_interval'] else 1)
 
