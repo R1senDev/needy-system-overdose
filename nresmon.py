@@ -20,15 +20,16 @@ CPU_PBAR_WARN  = 0.85
 RAM_PBAR_WARN  = 0.85
 DISK_PBAR_WARN = 0.9
 
-COL_LIGHT_PINK_BG = (255, 201, 201, 255)
-COL_PINK_TEXT     = (255, 51,  201, 255)
-COL_ACCENT        = (255, 153, 201, 255)
-COL_PBAR_FILL     = (255, 0,   201, 255)
+COL_LIGHT_PINK_BG = (255, 204, 204, 255)
+COL_PINK_TEXT     = (255, 51,  204, 255)
+COL_ACCENT        = (255, 153, 204, 255)
+COL_PBAR_FILL     = (255, 0,   204, 255)
 COL_PBAR_WARN     = (255, 0,   102, 255)
 
 dragging_window = [False, 0, 0]
 settings_shown = False
 forced_c_selection = False
+dialog_is_opened = False
 
 bg_offset = 0
 
@@ -91,7 +92,7 @@ try:
         caption   = 'NeedySystemOverdose'
     )
 except Exception:
-    print('Oh no! It seems that you have an outdated driver (for example, the Intel HD Graphics 2016). Full traceback is in the crash.log file.')
+    print('Oh no! It seems that you have an outdated driver (for example, the Intel HD Graphics 2046). Full traceback is in the crash.log file.')
     with open('crash.log', 'w') as crash_log:
         crash_log.write(format_exc())
     exit()
@@ -101,6 +102,8 @@ window.set_location(screen.width // 2 - WIDE_WINDOW_WIDTH // 2, screen.height //
 
 bg_batch             = pyglet.graphics.Batch()
 fg_batch             = pyglet.graphics.Batch()
+dialog_bg_batch      = pyglet.graphics.Batch()
+dialog_fg_batch      = pyglet.graphics.Batch()
 character_batch      = pyglet.graphics.Batch()
 anim_character_batch = pyglet.graphics.Batch()
 
@@ -120,6 +123,7 @@ uptime_anim     = pyglet.image.load_animation(f'sprites/characters/{pack["uptime
 cpu_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{pack["cpu"]["animated"]}')
 ram_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{pack["ram"]["animated"]}')
 disk_usage_anim = pyglet.image.load_animation(f'sprites/characters/{pack["disk"]["animated"]}')
+question_anim   = pyglet.image.load_animation('sprites/characters/question_anim.gif')
 
 # Loading cursors' sprites
 cur_normal_img  = pyglet.image.load('cursors/cursor_normal.png')
@@ -141,6 +145,8 @@ bg_tile_img  = pyglet.image.load('sprites/bg_tile.png')
 bg_tiles = [[pyglet.sprite.Sprite(bg_tile_img, x * bg_tile_img.width, y * bg_tile_img.height, batch = bg_batch) for x in range((WIDE_WINDOW_WIDTH // bg_tile_img.width) + 2)] for y in range((window.height // bg_tile_img.height) + 1)]
 
 ui_close_img            = pyglet.image.load('ui/close_btn.png')
+ui_confirm_img          = pyglet.image.load('ui/confirm_btn.png')
+ui_cancel_img           = pyglet.image.load('ui/cancel_btn.png')
 ui_minimize_img         = pyglet.image.load('ui/minimize_btn.png')
 ui_checkbox_empty_img   = pyglet.image.load('ui/checkbox_empty.png')
 ui_checkbox_checked_img = pyglet.image.load('ui/checkbox_checked.png')
@@ -149,20 +155,22 @@ ui_nav_right_img        = pyglet.image.load('ui/nav_right.png')
 ui_settings_img         = pyglet.image.load('ui/settings_btn.png')
 ui_link_img             = pyglet.image.load('ui/link_btn.png')
 
-icon_sprite            = pyglet.sprite.Sprite(icon64_img,      20, window.height - 72, batch = fg_batch)
-uptime_sprite          = pyglet.sprite.Sprite(uptime_img,      20, 440,                batch = character_batch)
-cpu_usage_sprite       = pyglet.sprite.Sprite(cpu_usage_img,   20, 300,                batch = character_batch)
-ram_usage_sprite       = pyglet.sprite.Sprite(ram_usage_img,   20, 160,                batch = character_batch)
-disk_usage_sprite      = pyglet.sprite.Sprite(disk_usage_img,  20, 20,                 batch = character_batch)
-uptime_anim_sprite     = pyglet.sprite.Sprite(uptime_anim,     20, 440,                batch = anim_character_batch)
-cpu_usage_anim_sprite  = pyglet.sprite.Sprite(cpu_usage_anim,  20, 300,                batch = anim_character_batch)
-ram_usage_anim_sprite  = pyglet.sprite.Sprite(ram_usage_anim,  20, 160,                batch = anim_character_batch)
-disk_usage_anim_sprite = pyglet.sprite.Sprite(disk_usage_anim, 20, 20,                 batch = anim_character_batch)
+icon_sprite            = pyglet.sprite.Sprite(icon64_img,      20, window.height - 72,  batch = fg_batch)
+uptime_sprite          = pyglet.sprite.Sprite(uptime_img,      20, 440,                 batch = character_batch)
+cpu_usage_sprite       = pyglet.sprite.Sprite(cpu_usage_img,   20, 300,                 batch = character_batch)
+ram_usage_sprite       = pyglet.sprite.Sprite(ram_usage_img,   20, 160,                 batch = character_batch)
+disk_usage_sprite      = pyglet.sprite.Sprite(disk_usage_img,  20, 20,                  batch = character_batch)
+uptime_anim_sprite     = pyglet.sprite.Sprite(uptime_anim,     20, 440,                 batch = anim_character_batch)
+cpu_usage_anim_sprite  = pyglet.sprite.Sprite(cpu_usage_anim,  20, 300,                 batch = anim_character_batch)
+ram_usage_anim_sprite  = pyglet.sprite.Sprite(ram_usage_anim,  20, 160,                 batch = anim_character_batch)
+disk_usage_anim_sprite = pyglet.sprite.Sprite(disk_usage_anim, 20, 20,                  batch = anim_character_batch)
+question_anim_sprite   = pyglet.sprite.Sprite(question_anim,   30, window.height - 195, batch = dialog_fg_batch)
 
 uptime_anim_sprite.frame_index = 0
 cpu_usage_anim_sprite.frame_index = 0
 ram_usage_anim_sprite.frame_index = 0
 disk_usage_anim_sprite.frame_index = 0
+question_anim_sprite.frame_index = 0
 
 def toggle_settings():
     global settings_shown
@@ -175,42 +183,58 @@ def save_settings():
     with open(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\settings.json', 'w') as file:
         dump(settings, file)
 
+def on_close_button_press():
+    global dialog_is_opened
+    dialog_is_opened = True
+
+def close_dialog():
+    global dialog_is_opened
+    dialog_is_opened = False
+
 def set_animations_enabled(state):
     settings['enable_animations'] = state
     save_settings()
+
 def set_bg_animation_enabled(state):
     settings['enable_bg_animation'] = state
     save_settings()
+
 def set_blocks_transparency(state):
     settings['blocks_transparency'] = 204 if state else 255
-    bg_resmon_header.color   = (255, 201, 201, settings['blocks_transparency'])
-    bg_resmon_main.color     = (255, 201, 201, settings['blocks_transparency'])
-    bg_resmon_info.color     = (255, 201, 201, settings['blocks_transparency'])
-    bg_resmon_settings.color = (255, 201, 201, settings['blocks_transparency'])
+    bg_resmon_header.color   = (255, 204, 204, settings['blocks_transparency'])
+    bg_resmon_main.color     = (255, 204, 204, settings['blocks_transparency'])
+    bg_resmon_info.color     = (255, 204, 204, settings['blocks_transparency'])
+    bg_resmon_settings.color = (255, 204, 204, settings['blocks_transparency'])
     save_settings()
+
 def set_shorter_update_interval(state):
     settings['shorter_update_interval'] = state
     save_settings()
+
 def set_disk_space_variant_to_free(state):
     settings['disk_space_variant'] = 'free' if state else 'used'
     save_settings()
+
 def set_randomize_sprites_packs(state):
     settings['random_sprites_pack'] = state
     save_settings()
+
 def set_custom_cursor(state):
     settings['custom_cursor'] = not state
     if state: window.set_mouse_cursor(cur_default_normal)
     else: window.set_mouse_cursor(cur_pointer)
-    on_mouse_motion()
     save_settings()
+
 def on_disk_nav_left():
     if settings['disk_index'] > 0: settings['disk_index'] -= 1
     else: settings['disk_index'] = 25
     save_settings()
+
 def on_disk_nav_right():
     if settings['disk_index'] < 25: settings['disk_index'] += 1
     else: settings['disk_index'] = 0
     save_settings()
+
 def open_github_repo():
     open_url('https://github.com/R1senDev/needy-system-overdose', 2)
 
@@ -296,7 +320,7 @@ class Button:
 
 
 ui = {
-    'window_close_button':        Button(BASE_WINDOW_WIDTH - 60,  window.height - 60, window.close, ui_close_img),
+    'window_close_button':        Button(BASE_WINDOW_WIDTH - 60,  window.height - 60, on_close_button_press, ui_close_img),
     'window_minimize_button':     Button(BASE_WINDOW_WIDTH - 110, window.height - 60, window.minimize, ui_minimize_img),
     'settings_toggle_button':     Button(790,  20,  toggle_settings, ui_settings_img),
     'github_link':                Button(1290, 610, open_github_repo, ui_link_img),
@@ -311,6 +335,11 @@ ui = {
     'custom_cursor_switch':       Switch(860,  70,  set_custom_cursor, not settings['custom_cursor']),
 }
 
+dialog_ui = {
+    'confirm_button': Button(BASE_WINDOW_WIDTH - 80,  window.height - 170, window.close, ui_confirm_img),
+    'cancel_button':  Button(BASE_WINDOW_WIDTH - 130, window.height - 170, close_dialog, ui_cancel_img),
+}
+
 other_elements = {
     'cpu_progress':  Progress(200, 320, 325, 10, COL_ACCENT, COL_PBAR_FILL),
     'ram_progress':  Progress(200, 180, 325, 10, COL_ACCENT, COL_PBAR_FILL),
@@ -322,14 +351,14 @@ window_title = pyglet.text.Label(
     font_name = 'Press Start 2P',
     font_size = 16,
     italic    = True,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 94,
     y         = window.height - 40,
     anchor_y  = 'center',
     batch     = fg_batch
 )
 window_title_version = pyglet.text.Label(
-    text      = 'v1.2.1b',
+    text      = 'v1.3.0b',
     font_name = 'Press Start 2P',
     font_size = 10,
     color     = COL_PINK_TEXT,
@@ -344,7 +373,7 @@ info_label = pyglet.text.Label(
     text      = 'project by R1senDev',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 860,
     y         = 630,
     anchor_y  = 'center',
@@ -354,7 +383,7 @@ animations_setting_label = pyglet.text.Label(
     text      = 'Animations',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 560,
     anchor_y  = 'center',
@@ -364,7 +393,7 @@ bg_animation_setting_label = pyglet.text.Label(
     text      = 'Animate background',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 510,
     anchor_y  = 'center',
@@ -374,7 +403,7 @@ blocks_transparency_setting_label = pyglet.text.Label(
     text      = 'Transparent blocks',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 460,
     anchor_y  = 'center',
@@ -384,7 +413,7 @@ disk_setting_label = pyglet.text.Label(
     text      = 'Disk letter',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 420,
     anchor_y  = 'top',
@@ -394,7 +423,7 @@ disk_setting_letter = pyglet.text.Label(
     text      = 'C:',
     font_name = 'Press Start 2P',
     font_size = 24,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 975,
     y         = 376,
     anchor_x  = 'center',
@@ -405,7 +434,7 @@ update_interval_label_1 = pyglet.text.Label(
     text      = 'Shorter update',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 300,
     anchor_y  = 'center',
@@ -415,7 +444,7 @@ update_interval_label_2 = pyglet.text.Label(
     text      = 'interval',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 270,
     anchor_y  = 'center',
@@ -425,7 +454,7 @@ show_free_space_label_1 = pyglet.text.Label(
     text      = 'Show free disk space',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 220,
     anchor_y  = 'center',
@@ -435,7 +464,7 @@ show_free_space_label_2 = pyglet.text.Label(
     text      = 'instead of used',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 190,
     anchor_y  = 'center',
@@ -445,7 +474,7 @@ randomize_packs_label = pyglet.text.Label(
     text      = 'Random sprites pack',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 140,
     anchor_y  = 'center',
@@ -455,7 +484,7 @@ default_cursor_label = pyglet.text.Label(
     text      = 'Default cursor',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 910,
     y         = 90,
     anchor_y  = 'center',
@@ -476,7 +505,7 @@ uptime_label = pyglet.text.Label(
     text      = 'N/A',
     font_name = 'Press Start 2P',
     font_size = 50,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 200,
     y         = 470,
     batch     = fg_batch
@@ -495,7 +524,7 @@ cpu_label = pyglet.text.Label(
     text      = 'N/A',
     font_name = 'Press Start 2P',
     font_size = 50,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 200,
     y         = 330,
     batch     = fg_batch
@@ -514,7 +543,7 @@ ram_label = pyglet.text.Label(
     text      = 'N/A',
     font_name = 'Press Start 2P',
     font_size = 50,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 200,
     y         = 190,
     batch     = fg_batch
@@ -533,7 +562,7 @@ disk_label = pyglet.text.Label(
     text      = 'N/A',
     font_name = 'Press Start 2P',
     font_size = 50,
-    color     = (255, 0, 201, 255),
+    color     = (255, 0, 204, 255),
     x         = 200,
     y         = 50,
     batch     = fg_batch
@@ -570,6 +599,43 @@ bg_resmon_settings = pyglet.shapes.Rectangle(
     height = 580,
     color  = COL_LIGHT_PINK_BG,
     batch  = bg_batch
+)
+
+
+dialog_dark_overlay = pyglet.shapes.Rectangle(
+    x      = 0,
+    y      = 0,
+    width  = WIDE_WINDOW_WIDTH,
+    height = window.height,
+    color  = (0, 0, 0, 153),
+    batch  = dialog_bg_batch
+)
+dialog_outer_container = pyglet.shapes.Rectangle(
+    x      = 20,
+    y      = window.height - 190,
+    width  = BASE_WINDOW_WIDTH - 40,
+    height = 100,
+    color  = COL_PINK_TEXT,
+    batch  = dialog_bg_batch
+)
+dialog_inner_container = pyglet.shapes.Rectangle(
+    x      = dialog_outer_container.x + 5,
+    y      = dialog_outer_container.y + 5,
+    width  = dialog_outer_container.width - 10,
+    height = dialog_outer_container.height - 10,
+    color  = COL_LIGHT_PINK_BG,
+    batch  = dialog_bg_batch
+)
+dialog_label = pyglet.text.Label(
+    text      = 'Are you sure you want to exit?',
+    font_name = 'Press Start 2P',
+    font_size = 14,
+    color     = (255, 0, 204, 255),
+    x         = dialog_inner_container.x + dialog_inner_container.width - 10,
+    y         = dialog_inner_container.y + dialog_inner_container.height - 10,
+    anchor_x  = 'right',
+    anchor_y  = 'top',
+    batch     = dialog_fg_batch
 )
 
 
@@ -623,15 +689,28 @@ def on_draw():
     for elem in ui:
         ui[elem].draw()
 
+    if dialog_is_opened:
+        dialog_bg_batch.draw()
+        dialog_fg_batch.draw()
+        for elem in dialog_ui:
+            dialog_ui[elem].draw()
+
 
 @window.event
 def on_mouse_press(x, y, button, modifiers):
-    global dragging_window
+    global dragging_window, dialog_is_opened
 
     interaction = False
 
-    for elem in ui:
-        interaction = interaction or ui[elem].click(x, y)
+    if not dialog_is_opened:
+        for elem in ui:
+            interaction = interaction or ui[elem].click(x, y)
+    else:
+        if not (dialog_outer_container.x <= x <= dialog_outer_container.x + dialog_outer_container.width and dialog_outer_container.y <= y <= dialog_outer_container.y + dialog_outer_container.height):
+            dialog_is_opened = False
+        else:
+            for elem in dialog_ui:
+                interaction = interaction or dialog_ui[elem].click(x, y)
 
     if not interaction:
         dragging_window = [True, *get_absolute_cursor_position()]
