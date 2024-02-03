@@ -41,6 +41,7 @@ default_settings = {
     'blocks_transparency': 255,
     'disk_space_variant': 'used',
     'random_sprites_pack': False,
+    'custom_cursor': False,
 }
 try:
     makedirs(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\')
@@ -103,12 +104,14 @@ fg_batch             = pyglet.graphics.Batch()
 character_batch      = pyglet.graphics.Batch()
 anim_character_batch = pyglet.graphics.Batch()
 
+# Loading font
 pyglet.font.add_directory('fonts/')
 press_start_2p_font = pyglet.font.load('Press Start 2P')
 
 if settings['random_sprites_pack']: pack = choice(packs_data)
 else: pack = packs_data[0]
 
+# Loading characters' sprites
 uptime_img      = pyglet.image.load(f'sprites/characters/{pack["uptime"]["static"]}')
 cpu_usage_img   = pyglet.image.load(f'sprites/characters/{pack["cpu"]["static"]}')
 ram_usage_img   = pyglet.image.load(f'sprites/characters/{pack["ram"]["static"]}')
@@ -117,6 +120,17 @@ uptime_anim     = pyglet.image.load_animation(f'sprites/characters/{pack["uptime
 cpu_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{pack["cpu"]["animated"]}')
 ram_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{pack["ram"]["animated"]}')
 disk_usage_anim = pyglet.image.load_animation(f'sprites/characters/{pack["disk"]["animated"]}')
+
+# Loading cursors' sprites
+cur_normal_img  = pyglet.image.load('cursors/cursor_normal.png')
+cur_pointer_img = pyglet.image.load('cursors/cursor_pointer.png')
+
+# Gathering default OS cursor
+cur_default_normal  = window.CURSOR_DEFAULT
+# Creating cursors from sprites
+cur_normal  = pyglet.window.ImageMouseCursor(cur_normal_img, 0, cur_normal_img.height)
+cur_pointer = pyglet.window.ImageMouseCursor(cur_pointer_img, 9, cur_pointer_img.height)
+window.set_mouse_cursor(cur_normal)
 
 icon32_img  = pyglet.image.load('sprites/icon32.png')
 icon64_img  = pyglet.image.load('sprites/icon64.png')
@@ -145,6 +159,10 @@ cpu_usage_anim_sprite  = pyglet.sprite.Sprite(cpu_usage_anim,  20, 300,         
 ram_usage_anim_sprite  = pyglet.sprite.Sprite(ram_usage_anim,  20, 160,                batch = anim_character_batch)
 disk_usage_anim_sprite = pyglet.sprite.Sprite(disk_usage_anim, 20, 20,                 batch = anim_character_batch)
 
+uptime_anim_sprite.frame_index = 0
+cpu_usage_anim_sprite.frame_index = 0
+ram_usage_anim_sprite.frame_index = 0
+disk_usage_anim_sprite.frame_index = 0
 
 def toggle_settings():
     global settings_shown
@@ -178,6 +196,12 @@ def set_disk_space_variant_to_free(state):
     save_settings()
 def set_randomize_sprites_packs(state):
     settings['random_sprites_pack'] = state
+    save_settings()
+def set_custom_cursor(state):
+    settings['custom_cursor'] = not state
+    if state: window.set_mouse_cursor(cur_default_normal)
+    else: window.set_mouse_cursor(cur_pointer)
+    on_mouse_motion()
     save_settings()
 def on_disk_nav_left():
     if settings['disk_index'] > 0: settings['disk_index'] -= 1
@@ -245,6 +269,9 @@ class Switch:
     def draw(self):
         if self.state: self.enabled_sprite.draw()
         else: self.disabled_sprite.draw()
+
+    def is_inner(self, x: int, y: int) -> bool:
+        return self.x <= x <= self.x + self.disabled_sprite.width and self.y <= y <= self.y + self.disabled_sprite.height
     
 
 class Button:
@@ -263,6 +290,9 @@ class Button:
 
     def draw(self):
         self.sprite.draw()
+    
+    def is_inner(self, x: int, y: int) -> bool:
+        return self.x <= x <= self.x + self.sprite.width and self.y <= y <= self.y + self.sprite.height
 
 
 ui = {
@@ -278,6 +308,7 @@ ui = {
     'update_interval_switch':     Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
     'disk_space_variant_switch':  Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
     'random_sprites_pack_switch': Switch(860,  120, set_randomize_sprites_packs, settings['random_sprites_pack']),
+    'custom_cursor_switch':       Switch(860,  70,  set_custom_cursor, not settings['custom_cursor']),
 }
 
 other_elements = {
@@ -298,10 +329,9 @@ window_title = pyglet.text.Label(
     batch     = fg_batch
 )
 window_title_version = pyglet.text.Label(
-    text      = 'v1.2.0b',
+    text      = 'v1.2.1b',
     font_name = 'Press Start 2P',
     font_size = 10,
-    # italic    = True,
     color     = COL_PINK_TEXT,
     x         = BASE_WINDOW_WIDTH - 120,
     y         = window.height - 60,
@@ -418,6 +448,16 @@ randomize_packs_label = pyglet.text.Label(
     color     = (255, 0, 201, 255),
     x         = 910,
     y         = 140,
+    anchor_y  = 'center',
+    batch     = fg_batch
+)
+default_cursor_label = pyglet.text.Label(
+    text      = 'Default cursor',
+    font_name = 'Press Start 2P',
+    font_size = 16,
+    color     = (255, 0, 201, 255),
+    x         = 910,
+    y         = 90,
     anchor_y  = 'center',
     batch     = fg_batch
 )
@@ -602,11 +642,21 @@ def on_mouse_release(x, y, button, modifiers):
     dragging_window[0] = False
 
 
+@window.event
+def on_mouse_motion(x, y, *args, **kwargs):
+    if settings['custom_cursor']:
+        need_to_ask_interation = False
+        for elem in ui:
+            need_to_ask_interation = need_to_ask_interation or ui[elem].is_inner(x, y)
+        window.set_mouse_cursor(cur_pointer if need_to_ask_interation else cur_normal)
+    else:
+        window.set_mouse_cursor(cur_default_normal)
+
+
 def system_info_updater():
     global forced_c_selection
 
     while not pyglet.app.event_loop.is_running:
-        print('pyglet evloop isn\'t running')
         sleep(0.02)
     while pyglet.app.event_loop.is_running:
 
