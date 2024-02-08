@@ -13,6 +13,9 @@ from os         import makedirs
 import pyglet
 
 
+# kernel32 = windll.
+
+
 WIDE_WINDOW_WIDTH = 1350
 BASE_WINDOW_WIDTH = 850
 
@@ -351,14 +354,14 @@ window_title = pyglet.text.Label(
     font_name = 'Press Start 2P',
     font_size = 16,
     italic    = True,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 94,
     y         = window.height - 40,
     anchor_y  = 'center',
     batch     = fg_batch
 )
 window_title_version = pyglet.text.Label(
-    text      = 'v1.3.0b',
+    text      = 'v1.3.1b',
     font_name = 'Press Start 2P',
     font_size = 10,
     color     = COL_PINK_TEXT,
@@ -373,7 +376,7 @@ info_label = pyglet.text.Label(
     text      = 'project by R1senDev',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 860,
     y         = 630,
     anchor_y  = 'center',
@@ -383,7 +386,7 @@ animations_setting_label = pyglet.text.Label(
     text      = 'Animations',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 560,
     anchor_y  = 'center',
@@ -393,7 +396,7 @@ bg_animation_setting_label = pyglet.text.Label(
     text      = 'Animate background',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 510,
     anchor_y  = 'center',
@@ -403,7 +406,7 @@ blocks_transparency_setting_label = pyglet.text.Label(
     text      = 'Transparent blocks',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 460,
     anchor_y  = 'center',
@@ -413,7 +416,7 @@ disk_setting_label = pyglet.text.Label(
     text      = 'Disk letter',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 420,
     anchor_y  = 'top',
@@ -423,7 +426,7 @@ disk_setting_letter = pyglet.text.Label(
     text      = 'C:',
     font_name = 'Press Start 2P',
     font_size = 24,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 975,
     y         = 376,
     anchor_x  = 'center',
@@ -434,7 +437,7 @@ update_interval_label_1 = pyglet.text.Label(
     text      = 'Shorter update',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 300,
     anchor_y  = 'center',
@@ -444,7 +447,7 @@ update_interval_label_2 = pyglet.text.Label(
     text      = 'interval',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 270,
     anchor_y  = 'center',
@@ -454,7 +457,7 @@ show_free_space_label_1 = pyglet.text.Label(
     text      = 'Show free disk space',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 220,
     anchor_y  = 'center',
@@ -464,7 +467,7 @@ show_free_space_label_2 = pyglet.text.Label(
     text      = 'instead of used',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 190,
     anchor_y  = 'center',
@@ -474,7 +477,7 @@ randomize_packs_label = pyglet.text.Label(
     text      = 'Random sprites pack',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 140,
     anchor_y  = 'center',
@@ -484,7 +487,7 @@ default_cursor_label = pyglet.text.Label(
     text      = 'Default cursor',
     font_name = 'Press Start 2P',
     font_size = 16,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 910,
     y         = 90,
     anchor_y  = 'center',
@@ -505,7 +508,7 @@ uptime_label = pyglet.text.Label(
     text      = 'N/A',
     font_name = 'Press Start 2P',
     font_size = 50,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 200,
     y         = 470,
     batch     = fg_batch
@@ -524,7 +527,7 @@ cpu_label = pyglet.text.Label(
     text      = 'N/A',
     font_name = 'Press Start 2P',
     font_size = 50,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 200,
     y         = 330,
     batch     = fg_batch
@@ -543,7 +546,7 @@ ram_label = pyglet.text.Label(
     text      = 'N/A',
     font_name = 'Press Start 2P',
     font_size = 50,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 200,
     y         = 190,
     batch     = fg_batch
@@ -562,7 +565,7 @@ disk_label = pyglet.text.Label(
     text      = 'N/A',
     font_name = 'Press Start 2P',
     font_size = 50,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = 200,
     y         = 50,
     batch     = fg_batch
@@ -630,7 +633,7 @@ dialog_label = pyglet.text.Label(
     text      = 'Are you sure you want to exit?',
     font_name = 'Press Start 2P',
     font_size = 14,
-    color     = (255, 0, 204, 255),
+    color     = COL_PBAR_FILL,
     x         = dialog_inner_container.x + dialog_inner_container.width - 10,
     y         = dialog_inner_container.y + dialog_inner_container.height - 10,
     anchor_x  = 'right',
@@ -645,6 +648,14 @@ system_info = {
     'ram': 'N/A',
     'disk': 'N/A'
 }
+
+raw_system_info = {
+    'uptime': -1,
+    'cpu': -1,
+    'ram': -1,
+    'used_disk_space': -1
+}
+
 
 kernel32 = windll.kernel32
 
@@ -680,6 +691,17 @@ def on_draw():
     else: disk_title.text = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)'
     disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
     disk_label.text = system_info['disk']
+
+    print('CPU', raw_system_info['cpu'], CPU_PBAR_WARN, sep = '\t')
+    print('RAM', raw_system_info['ram'], CPU_PBAR_WARN, sep = '\t')
+    print('Disk', raw_system_info['used_disk_space'], DISK_PBAR_WARN, sep = '\t')
+
+    if raw_system_info['cpu'] < CPU_PBAR_WARN: cpu_label.color = COL_PBAR_FILL
+    else: cpu_label.color = COL_PBAR_WARN
+    if raw_system_info['ram'] < RAM_PBAR_WARN: ram_label.color = COL_PBAR_FILL
+    else: ram_label.color = COL_PBAR_WARN
+    if raw_system_info['used_disk_space'] < DISK_PBAR_WARN: disk_label.color = COL_PBAR_FILL
+    else: disk_label.color = COL_PBAR_WARN
 
     bg_batch.draw()
     if settings['enable_animations']: anim_character_batch.draw()
@@ -744,15 +766,18 @@ def system_info_updater():
         mins, sec = divmod(seconds_uptime, 60)
         hour, mins = divmod(mins, 60)
         system_info['uptime'] = f'{hour:02}:{mins:02}:{sec:02}'
+        raw_system_info['uptime'] = seconds_uptime
 
         cpu_usage = cpu_percent()
         system_info['cpu'] = f'{szfill(round(cpu_usage, 1))}%'
+        raw_system_info['cpu'] = cpu_usage / 100
         other_elements['cpu_progress'].update_progress(cpu_usage / 100)
         if cpu_usage / 100 >= CPU_PBAR_WARN: other_elements['cpu_progress'].update_fill_color(COL_PBAR_WARN)
         else: other_elements['cpu_progress'].update_fill_color(COL_PBAR_FILL)
 
         vmem_usage = virtual_memory().percent
         system_info['ram'] = f'{szfill(round(vmem_usage, 1))}%'
+        raw_system_info['ram'] = vmem_usage / 100
         other_elements['ram_progress'].update_progress(vmem_usage / 100)
         if vmem_usage / 100 >= RAM_PBAR_WARN: other_elements['ram_progress'].update_fill_color(COL_PBAR_WARN)
         else: other_elements['ram_progress'].update_fill_color(COL_PBAR_FILL)
@@ -767,6 +792,7 @@ def system_info_updater():
             system_info['disk'] = f'{szfill(round(c_usage.used / c_usage.total * 100, 1))}%'
         else:
             system_info['disk'] = f'{szfill(round(c_usage.free / c_usage.total * 100, 1))}%'
+        raw_system_info['used_disk_space'] = c_usage.used / c_usage.total
         other_elements['disk_progress'].update_progress(c_usage.used / c_usage.total)
         if c_usage.used / c_usage.total >= DISK_PBAR_WARN: other_elements['disk_progress'].update_fill_color(COL_PBAR_WARN)
         else: other_elements['disk_progress'].update_fill_color(COL_PBAR_FILL)
