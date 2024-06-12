@@ -3,9 +3,9 @@ from traceback  import format_exc
 from threading  import Thread
 from getpass    import getuser
 from psutil     import cpu_percent, virtual_memory, disk_usage
+from ctypes     import windll, Structure, c_long, byref
 from string     import ascii_uppercase
 from typing     import Callable
-from ctypes     import windll, Structure, c_long, byref
 from random     import choice
 from json       import load, dump
 from time       import sleep
@@ -46,6 +46,7 @@ default_settings = {
     'disk_space_variant': 'used',
     'random_sprites_pack': False,
     'custom_cursor': False,
+    'show_units': False,
 }
 try:
     makedirs(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\')
@@ -105,6 +106,7 @@ window.set_location(screen.width // 2 - WIDE_WINDOW_WIDTH // 2, screen.height //
 
 bg_batch             = pyglet.graphics.Batch()
 fg_batch             = pyglet.graphics.Batch()
+units_batch          = pyglet.graphics.Batch()
 dialog_bg_batch      = pyglet.graphics.Batch()
 dialog_fg_batch      = pyglet.graphics.Batch()
 character_batch      = pyglet.graphics.Batch()
@@ -228,6 +230,10 @@ def set_custom_cursor(state):
     else: window.set_mouse_cursor(cur_pointer)
     save_settings()
 
+def set_show_units(state):
+    settings['show_units'] = state
+    save_settings()
+
 def on_disk_nav_left():
     if settings['disk_index'] > 0: settings['disk_index'] -= 1
     else: settings['disk_index'] = 25
@@ -323,19 +329,20 @@ class Button:
 
 
 ui = {
-    'window_close_button':        Button(BASE_WINDOW_WIDTH - 60,  window.height - 60, on_close_button_press, ui_close_img),
-    'window_minimize_button':     Button(BASE_WINDOW_WIDTH - 110, window.height - 60, window.minimize, ui_minimize_img),
-    'settings_toggle_button':     Button(790,  20,  toggle_settings, ui_settings_img),
-    'github_link':                Button(1290, 610, open_github_repo, ui_link_img),
-    'animations_switch':          Switch(860,  540, set_animations_enabled, settings['enable_animations']),
-    'bg_animation_switch':        Switch(860,  490, set_bg_animation_enabled, settings['enable_bg_animation']),
-    'transparency_switch':        Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
-    'disk_selector_nav_left':     Button(910,  340, on_disk_nav_left, ui_nav_left_img),
-    'disk_selector_nav_right':    Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
-    'update_interval_switch':     Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
-    'disk_space_variant_switch':  Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
-    'random_sprites_pack_switch': Switch(860,  120, set_randomize_sprites_packs, settings['random_sprites_pack']),
-    'custom_cursor_switch':       Switch(860,  70,  set_custom_cursor, not settings['custom_cursor']),
+    'window_close_button':         Button(BASE_WINDOW_WIDTH - 60,  window.height - 60, on_close_button_press, ui_close_img),
+    'window_minimize_button':      Button(BASE_WINDOW_WIDTH - 110, window.height - 60, window.minimize, ui_minimize_img),
+    'settings_toggle_button':      Button(790,  20,  toggle_settings, ui_settings_img),
+    'github_link':                 Button(1290, 610, open_github_repo, ui_link_img),
+    'animations_switch':           Switch(860,  540, set_animations_enabled, settings['enable_animations']),
+    'bg_animation_switch':         Switch(860,  490, set_bg_animation_enabled, settings['enable_bg_animation']),
+    'transparency_switch':         Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
+    'disk_selector_nav_left':      Button(910,  340, on_disk_nav_left, ui_nav_left_img),
+    'disk_selector_nav_right':     Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
+    'update_interval_switch':      Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
+    'disk_space_variant_switch':   Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
+    'random_sprites_pack_switch':  Switch(860,  120, set_randomize_sprites_packs, settings['random_sprites_pack']),
+    'custom_cursor_switch':        Switch(860,  70,  set_custom_cursor, not settings['custom_cursor']),
+    'show_units': Switch(860,  20,  set_show_units, settings['show_units']),
 }
 
 dialog_ui = {
@@ -493,6 +500,16 @@ default_cursor_label = pyglet.text.Label(
     anchor_y  = 'center',
     batch     = fg_batch
 )
+show_units_label = pyglet.text.Label(
+    text      = 'Show units',
+    font_name = 'Press Start 2P',
+    font_size = 16,
+    color     = COL_NORM_VALUE,
+    x         = 910,
+    y         = 40,
+    anchor_y  = 'center',
+    batch     = fg_batch
+)
 
 uptime_title = pyglet.text.Label(
     text      = 'Uptime',
@@ -646,7 +663,10 @@ system_info = {
     'uptime': 'N/A',
     'cpu': 'N/A',
     'ram': 'N/A',
-    'disk': 'N/A'
+    'ram_used': 'N/A',
+    'ram_total': 'N/A',
+    'disk': 'N/A',
+    'disk_used': 'N/A'
 }
 
 raw_system_info = {
@@ -686,11 +706,17 @@ def on_draw():
 
     uptime_label.text = system_info['uptime']
     cpu_label.text = system_info['cpu']
-    ram_label.text = system_info['ram']
+    if not settings['show_units']:
+        ram_label.text = system_info['ram']
+    else:
+        ram_label.text = f'{system_info["ram_used"]}/{system_info["ram_total"]}GB'
     if forced_c_selection: disk_title.text = 'Used disk space (C:)'
     else: disk_title.text = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)'
     disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
-    disk_label.text = system_info['disk']
+    if not settings['show_units']:
+        disk_label.text = system_info['disk']
+    else:
+        disk_label.text = f'{system_info["disk_used"]}GB' if system_info["disk_used"] < 1024 else f'{round(system_info["disk_used"] / 1024, 1)}TB'
 
     if raw_system_info['cpu'] < CPU_PBAR_WARN: cpu_label.color = COL_NORM_VALUE
     else: cpu_label.color = COL_CRIT_VALUE
@@ -703,6 +729,8 @@ def on_draw():
     if settings['enable_animations']: anim_character_batch.draw()
     else: character_batch.draw()
     fg_batch.draw()
+
+    if settings['show_units']: units_batch.draw()
 
     for elem in ui:
         ui[elem].draw()
@@ -774,6 +802,8 @@ def system_info_updater():
         vmem_usage = virtual_memory().percent
         system_info['ram'] = f'{szfill(round(vmem_usage, 1))}%'
         raw_system_info['ram'] = vmem_usage / 100
+        system_info['ram_used']  = round(virtual_memory().used / 1024 / 1024 / 1024, 1)
+        system_info['ram_total'] = str(round(virtual_memory().total / 1024 / 1024 / 1024, 1)).rstrip('.0')
         other_elements['ram_progress'].update_progress(vmem_usage / 100)
         if vmem_usage / 100 >= RAM_PBAR_WARN: other_elements['ram_progress'].update_fill_color(COL_CRIT_VALUE)
         else: other_elements['ram_progress'].update_fill_color(COL_NORM_VALUE)
@@ -784,6 +814,7 @@ def system_info_updater():
         except (FileNotFoundError, PermissionError):
             c_usage = disk_usage('C:\\')
             forced_c_selection = True
+        system_info['disk_used'] = round(c_usage.used / 1024 / 1024 / 1024, 1)
         if settings['disk_space_variant'] == 'used':
             system_info['disk'] = f'{szfill(round(c_usage.used / c_usage.total * 100, 1))}%'
         else:
