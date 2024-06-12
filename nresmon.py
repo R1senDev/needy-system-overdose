@@ -10,10 +10,8 @@ from random     import choice
 from json       import load, dump
 from time       import sleep
 from os         import makedirs
+
 import pyglet
-
-
-# kernel32 = windll.
 
 
 WIDE_WINDOW_WIDTH = 1350
@@ -106,7 +104,6 @@ window.set_location(screen.width // 2 - WIDE_WINDOW_WIDTH // 2, screen.height //
 
 bg_batch             = pyglet.graphics.Batch()
 fg_batch             = pyglet.graphics.Batch()
-units_batch          = pyglet.graphics.Batch()
 dialog_bg_batch      = pyglet.graphics.Batch()
 dialog_fg_batch      = pyglet.graphics.Batch()
 character_batch      = pyglet.graphics.Batch()
@@ -226,8 +223,10 @@ def set_randomize_sprites_packs(state):
 
 def set_custom_cursor(state):
     settings['custom_cursor'] = not state
-    if state: window.set_mouse_cursor(cur_default_normal)
-    else: window.set_mouse_cursor(cur_pointer)
+    if state:
+        window.set_mouse_cursor(cur_default_normal)
+    else:
+        window.set_mouse_cursor(cur_pointer)
     save_settings()
 
 def set_show_units(state):
@@ -235,13 +234,17 @@ def set_show_units(state):
     save_settings()
 
 def on_disk_nav_left():
-    if settings['disk_index'] > 0: settings['disk_index'] -= 1
-    else: settings['disk_index'] = 25
+    if settings['disk_index'] > 0:
+        settings['disk_index'] -= 1
+    else:
+        settings['disk_index'] = 25
     save_settings()
 
 def on_disk_nav_right():
-    if settings['disk_index'] < 25: settings['disk_index'] += 1
-    else: settings['disk_index'] = 0
+    if settings['disk_index'] < 25:
+        settings['disk_index'] += 1
+    else:
+        settings['disk_index'] = 0
     save_settings()
 
 def open_github_repo():
@@ -300,8 +303,10 @@ class Switch:
         return False
 
     def draw(self):
-        if self.state: self.enabled_sprite.draw()
-        else: self.disabled_sprite.draw()
+        if self.state:
+            self.enabled_sprite.draw()
+        else:
+            self.disabled_sprite.draw()
 
     def is_inner(self, x: int, y: int) -> bool:
         return self.x <= x <= self.x + self.disabled_sprite.width and self.y <= y <= self.y + self.disabled_sprite.height
@@ -342,7 +347,7 @@ ui = {
     'disk_space_variant_switch':   Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
     'random_sprites_pack_switch':  Switch(860,  120, set_randomize_sprites_packs, settings['random_sprites_pack']),
     'custom_cursor_switch':        Switch(860,  70,  set_custom_cursor, not settings['custom_cursor']),
-    'show_units': Switch(860,  20,  set_show_units, settings['show_units']),
+    'show_units':                  Switch(860,  20,  set_show_units, settings['show_units']),
 }
 
 dialog_ui = {
@@ -660,19 +665,19 @@ dialog_label = pyglet.text.Label(
 
 
 system_info = {
-    'uptime': 'N/A',
-    'cpu': 'N/A',
-    'ram': 'N/A',
-    'ram_used': 'N/A',
+    'uptime':    'N/A',
+    'cpu':       'N/A',
+    'ram':       'N/A',
+    'ram_used':  'N/A',
     'ram_total': 'N/A',
-    'disk': 'N/A',
+    'disk':      'N/A',
     'disk_used': 'N/A'
 }
 
 raw_system_info = {
-    'uptime': -1,
-    'cpu': -1,
-    'ram': -1,
+    'uptime':          -1,
+    'cpu':             -1,
+    'ram':             -1,
     'used_disk_space': -1
 }
 
@@ -710,27 +715,35 @@ def on_draw():
         ram_label.text = system_info['ram']
     else:
         ram_label.text = f'{system_info["ram_used"]}/{system_info["ram_total"]}GB'
-    if forced_c_selection: disk_title.text = 'Used disk space (C:)'
-    else: disk_title.text = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)'
+    if forced_c_selection:
+        disk_title.text = 'Used disk space (C:)'
+    else:
+        disk_title.text = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)'
     disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
     if not settings['show_units']:
         disk_label.text = system_info['disk']
     else:
         disk_label.text = f'{system_info["disk_used"]}GB' if system_info["disk_used"] < 1024 else f'{round(system_info["disk_used"] / 1024, 1)}TB'
 
-    if raw_system_info['cpu'] < CPU_PBAR_WARN: cpu_label.color = COL_NORM_VALUE
-    else: cpu_label.color = COL_CRIT_VALUE
-    if raw_system_info['ram'] < RAM_PBAR_WARN: ram_label.color = COL_NORM_VALUE
-    else: ram_label.color = COL_CRIT_VALUE
-    if raw_system_info['used_disk_space'] < DISK_PBAR_WARN: disk_label.color = COL_NORM_VALUE
-    else: disk_label.color = COL_CRIT_VALUE
+    if raw_system_info['cpu'] < CPU_PBAR_WARN:
+        cpu_label.color = COL_NORM_VALUE
+    else:
+        cpu_label.color = COL_CRIT_VALUE
+    if raw_system_info['ram'] < RAM_PBAR_WARN:
+        ram_label.color = COL_NORM_VALUE
+    else:
+        ram_label.color = COL_CRIT_VALUE
+    if raw_system_info['used_disk_space'] < DISK_PBAR_WARN:
+        disk_label.color = COL_NORM_VALUE
+    else:
+        disk_label.color = COL_CRIT_VALUE
 
     bg_batch.draw()
-    if settings['enable_animations']: anim_character_batch.draw()
-    else: character_batch.draw()
+    if settings['enable_animations']:
+        anim_character_batch.draw()
+    else:
+        character_batch.draw()
     fg_batch.draw()
-
-    if settings['show_units']: units_batch.draw()
 
     for elem in ui:
         ui[elem].draw()
@@ -796,8 +809,10 @@ def system_info_updater():
         system_info['cpu'] = f'{szfill(round(cpu_usage, 1))}%'
         raw_system_info['cpu'] = cpu_usage / 100
         other_elements['cpu_progress'].update_progress(cpu_usage / 100)
-        if cpu_usage / 100 >= CPU_PBAR_WARN: other_elements['cpu_progress'].update_fill_color(COL_CRIT_VALUE)
-        else: other_elements['cpu_progress'].update_fill_color(COL_NORM_VALUE)
+        if cpu_usage / 100 >= CPU_PBAR_WARN:
+            other_elements['cpu_progress'].update_fill_color(COL_CRIT_VALUE)
+        else:
+            other_elements['cpu_progress'].update_fill_color(COL_NORM_VALUE)
 
         vmem_usage = virtual_memory().percent
         system_info['ram'] = f'{szfill(round(vmem_usage, 1))}%'
@@ -805,8 +820,10 @@ def system_info_updater():
         system_info['ram_used']  = round(virtual_memory().used / 1024 / 1024 / 1024, 1)
         system_info['ram_total'] = str(round(virtual_memory().total / 1024 / 1024 / 1024, 1)).rstrip('.0')
         other_elements['ram_progress'].update_progress(vmem_usage / 100)
-        if vmem_usage / 100 >= RAM_PBAR_WARN: other_elements['ram_progress'].update_fill_color(COL_CRIT_VALUE)
-        else: other_elements['ram_progress'].update_fill_color(COL_NORM_VALUE)
+        if vmem_usage / 100 >= RAM_PBAR_WARN:
+            other_elements['ram_progress'].update_fill_color(COL_CRIT_VALUE)
+        else:
+            other_elements['ram_progress'].update_fill_color(COL_NORM_VALUE)
 
         try:
             c_usage = disk_usage(f'{ascii_uppercase[settings["disk_index"]]}:\\')
@@ -821,13 +838,20 @@ def system_info_updater():
             system_info['disk'] = f'{szfill(round(c_usage.free / c_usage.total * 100, 1))}%'
         raw_system_info['used_disk_space'] = c_usage.used / c_usage.total
         other_elements['disk_progress'].update_progress(c_usage.used / c_usage.total)
-        if c_usage.used / c_usage.total >= DISK_PBAR_WARN: other_elements['disk_progress'].update_fill_color(COL_CRIT_VALUE)
-        else: other_elements['disk_progress'].update_fill_color(COL_NORM_VALUE)
+        if c_usage.used / c_usage.total >= DISK_PBAR_WARN:
+            other_elements['disk_progress'].update_fill_color(COL_CRIT_VALUE)
+        else:
+            other_elements['disk_progress'].update_fill_color(COL_NORM_VALUE)
 
         sleep(0.5 if settings['shorter_update_interval'] else 1)
 
 
-system_info_updater_thread = Thread(target = system_info_updater, args = ())
+system_info_updater_thread = Thread(
+    target = system_info_updater,
+    args   = (),
+    name   = 'SystemInfoUpdater',
+    daemon = True
+)
 system_info_updater_thread.start()
 
 pyglet.app.run()
