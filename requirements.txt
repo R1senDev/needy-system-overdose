@@ -1,2 +1,2 @@
-pyglet>=2.0.10
-psutil>=5.9.8
+psutil==7.0.0
+pyglet==2.1.6

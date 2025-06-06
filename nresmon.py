@@ -22,15 +22,15 @@ RAM_PBAR_WARN  = 0.85
 DISK_PBAR_WARN = 0.9
 
 COL_LIGHT_PINK_BG = (255, 204, 204, 255)
-COL_PINK_TEXT     = (255, 51,  204, 255)
+COL_PINK_TEXT     = (255,  51, 204, 255)
 COL_ACCENT        = (255, 153, 204, 255)
-COL_NORM_VALUE     = (255, 0,   204, 255)
-COL_CRIT_VALUE     = (255, 0,   102, 255)
+COL_NORM_VALUE    = (255,   0, 204, 255)
+COL_CRIT_VALUE    = (255,   0, 102, 255)
 
-dragging_window = [False, 0, 0]
-settings_shown = False
+dragging_window    = [False, 0, 0]
+settings_shown     = False
 forced_c_selection = False
-dialog_is_opened = False
+dialog_is_opened   = False
 
 bg_offset = 0
 
@@ -85,7 +85,7 @@ def get_absolute_cursor_position() -> list[int]:
     return [point.x, point.y]
 
 try:
-    screen = pyglet.canvas.Display().get_default_screen()
+    screen = pyglet.display.get_display().get_default_screen()
     window = pyglet.window.Window(
         width     = BASE_WINDOW_WIDTH,
         height    = 670,
@@ -675,10 +675,10 @@ system_info = {
 }
 
 raw_system_info = {
-    'uptime':          -1,
-    'cpu':             -1,
-    'ram':             -1,
-    'used_disk_space': -1
+    'uptime':          -1.0,
+    'cpu':             -1.0,
+    'ram':             -1.0,
+    'used_disk_space': -1.0
 }
 
 
@@ -723,7 +723,7 @@ def on_draw():
     if not settings['show_units']:
         disk_label.text = system_info['disk']
     else:
-        disk_label.text = f'{system_info["disk_used"]}GB' if system_info["disk_used"] < 1024 else f'{round(system_info["disk_used"] / 1024, 1)}TB'
+        disk_label.text = f'{system_info["disk_used"]}GB' if raw_system_info["disk_used"] < 1024 else f'{round(raw_system_info["disk_used"] / 1024, 1)}TB'
 
     if raw_system_info['cpu'] < CPU_PBAR_WARN:
         cpu_label.color = COL_NORM_VALUE
@@ -817,7 +817,7 @@ def system_info_updater():
         vmem_usage = virtual_memory().percent
         system_info['ram'] = f'{szfill(round(vmem_usage, 1))}%'
         raw_system_info['ram'] = vmem_usage / 100
-        system_info['ram_used']  = round(virtual_memory().used / 1024 / 1024 / 1024, 1)
+        system_info['ram_used']  = str(round(virtual_memory().used / 1024 / 1024 / 1024, 1))
         system_info['ram_total'] = str(round(virtual_memory().total / 1024 / 1024 / 1024, 1)).rstrip('.0')
         other_elements['ram_progress'].update_progress(vmem_usage / 100)
         if vmem_usage / 100 >= RAM_PBAR_WARN:
@@ -831,7 +831,7 @@ def system_info_updater():
         except (FileNotFoundError, PermissionError):
             c_usage = disk_usage('C:\\')
             forced_c_selection = True
-        system_info['disk_used'] = round(c_usage.used / 1024 / 1024 / 1024, 1)
+        system_info['disk_used'] = str(round(c_usage.used / 1024 / 1024 / 1024, 1))
         if settings['disk_space_variant'] == 'used':
             system_info['disk'] = f'{szfill(round(c_usage.used / c_usage.total * 100, 1))}%'
         else:
