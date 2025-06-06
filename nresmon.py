@@ -37,6 +37,7 @@ bg_offset = 0
 
 
 default_settings = {
+    'character': 'kangel',
     'enable_animations': True,
     'disk_index': 2,
     'shorter_update_interval': False,
@@ -106,15 +107,15 @@ if settings['random_sprites_pack']: pack = choice(packs_data)
 else: pack = packs_data[0]
 
 # Loading characters' sprites
-uptime_img      = pyglet.image.load(f'sprites/characters/{pack["uptime"]["static"]}')
-cpu_usage_img   = pyglet.image.load(f'sprites/characters/{pack["cpu"]["static"]}')
-ram_usage_img   = pyglet.image.load(f'sprites/characters/{pack["ram"]["static"]}')
-disk_usage_img  = pyglet.image.load(f'sprites/characters/{pack["disk"]["static"]}')
-uptime_anim     = pyglet.image.load_animation(f'sprites/characters/{pack["uptime"]["animated"]}')
-cpu_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{pack["cpu"]["animated"]}')
-ram_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{pack["ram"]["animated"]}')
-disk_usage_anim = pyglet.image.load_animation(f'sprites/characters/{pack["disk"]["animated"]}')
-question_anim   = pyglet.image.load_animation('sprites/characters/question_anim.gif')
+uptime_img      = pyglet.image.load(f'sprites/characters/{settings["character"]}/{pack["uptime"]["static"]}')
+cpu_usage_img   = pyglet.image.load(f'sprites/characters/{settings["character"]}/{pack["cpu"]["static"]}')
+ram_usage_img   = pyglet.image.load(f'sprites/characters/{settings["character"]}/{pack["ram"]["static"]}')
+disk_usage_img  = pyglet.image.load(f'sprites/characters/{settings["character"]}/{pack["disk"]["static"]}')
+uptime_anim     = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/{pack["uptime"]["animated"]}')
+cpu_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/{pack["cpu"]["animated"]}')
+ram_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/{pack["ram"]["animated"]}')
+disk_usage_anim = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/{pack["disk"]["animated"]}')
+question_anim   = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/question_anim.gif')
 
 # Loading cursors' sprites
 cur_normal_img  = pyglet.image.load('cursors/cursor_normal.png')
