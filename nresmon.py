@@ -1,15 +1,16 @@
 from webbrowser import open as open_url
 from traceback  import format_exc
 from threading  import Thread
-from getpass    import getuser
+from platform   import system
 from psutil     import cpu_percent, virtual_memory, disk_usage
-from ctypes     import windll, Structure, c_long, byref
 from string     import ascii_uppercase
 from typing     import Callable
 from random     import choice
 from json       import load, dump
 from time       import sleep
 from os         import makedirs
+
+from plindf import is_windows, get_absolute_cursor_position, get_uptime, APP_DATA_ROOT, SETTINGS_PATH
 
 import pyglet
 
@@ -22,15 +23,15 @@ RAM_PBAR_WARN  = 0.85
 DISK_PBAR_WARN = 0.9
 
 COL_LIGHT_PINK_BG = (255, 204, 204, 255)
-COL_PINK_TEXT     = (255, 51,  204, 255)
+COL_PINK_TEXT     = (255,  51, 204, 255)
 COL_ACCENT        = (255, 153, 204, 255)
-COL_NORM_VALUE     = (255, 0,   204, 255)
-COL_CRIT_VALUE     = (255, 0,   102, 255)
+COL_NORM_VALUE    = (255,   0, 204, 255)
+COL_CRIT_VALUE    = (255,   0, 102, 255)
 
-dragging_window = [False, 0, 0]
-settings_shown = False
+dragging_window    = [False, 0, 0]
+settings_shown     = False
 forced_c_selection = False
-dialog_is_opened = False
+dialog_is_opened   = False
 
 bg_offset = 0
 
@@ -47,17 +48,17 @@ default_settings = {
     'show_units': False,
 }
 try:
-    makedirs(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\')
+    makedirs(APP_DATA_ROOT)
     settings = default_settings
-    with open(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\settings.json', 'w') as file:
+    with open(SETTINGS_PATH, 'w') as file:
         dump(default_settings, file)
 except OSError:
-    with open(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\settings.json', 'r') as file:
+    with open(SETTINGS_PATH, 'r') as file:
         settings = load(file)
     for key in default_settings:
         if key not in settings:
             settings = default_settings
-            with open(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\settings.json', 'w') as file:
+            with open(SETTINGS_PATH, 'w') as file:
                 dump(default_settings, file)
             break
 
@@ -72,20 +73,8 @@ def szfill(num: int | float | str, before_dot: int = 2) -> str:
     return num
 
 
-class Point(Structure):
-    _fields_ = [
-        ('x', c_long),
-        ('y', c_long)
-    ]
-
-
-def get_absolute_cursor_position() -> list[int]:
-    point = Point()
-    windll.user32.GetCursorPos(byref(point))
-    return [point.x, point.y]
-
 try:
-    screen = pyglet.canvas.Display().get_default_screen()
+    screen = pyglet.display.get_display().get_default_screen()
     window = pyglet.window.Window(
         width     = BASE_WINDOW_WIDTH,
         height    = 670,
@@ -94,7 +83,7 @@ try:
         caption   = 'NeedySystemOverdose'
     )
 except Exception:
-    print('Oh no! It seems that you have an outdated driver (for example, the Intel HD Graphics 2046). Full traceback is in the crash.log file.')
+    print('Oh no! It seems that you have an outdated driver (e.g. Intel HD Graphics 2046). Full traceback is in the crash.log file.')
     with open('crash.log', 'w') as crash_log:
         crash_log.write(format_exc())
     exit()
@@ -141,7 +130,7 @@ window.set_mouse_cursor(cur_normal)
 icon32_img  = pyglet.image.load('sprites/icon32.png')
 icon64_img  = pyglet.image.load('sprites/icon64.png')
 icon128_img = pyglet.image.load('sprites/icon128.png')
-window.set_icon(icon32_img, icon64_img, icon128_img)
+window.set_icon(icon32_img, icon64_img, icon128_img) # type: ignore
 
 bg_tile_img  = pyglet.image.load('sprites/bg_tile.png')
 bg_tiles = [[pyglet.sprite.Sprite(bg_tile_img, x * bg_tile_img.width, y * bg_tile_img.height, batch = bg_batch) for x in range((WIDE_WINDOW_WIDTH // bg_tile_img.width) + 2)] for y in range((window.height // bg_tile_img.height) + 1)]
@@ -182,7 +171,7 @@ def toggle_settings():
     else: window.set_size(BASE_WINDOW_WIDTH, window.get_size()[1])
 
 def save_settings():
-    with open(f'C:\\Users\\{getuser()}\\AppData\\Local\\R1senDev\\NeedySys\\settings.json', 'w') as file:
+    with open(SETTINGS_PATH, 'w') as file:
         dump(settings, file)
 
 def on_close_button_press():
@@ -341,14 +330,12 @@ ui = {
     'animations_switch':           Switch(860,  540, set_animations_enabled, settings['enable_animations']),
     'bg_animation_switch':         Switch(860,  490, set_bg_animation_enabled, settings['enable_bg_animation']),
     'transparency_switch':         Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
-    'disk_selector_nav_left':      Button(910,  340, on_disk_nav_left, ui_nav_left_img),
-    'disk_selector_nav_right':     Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
     'update_interval_switch':      Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
     'disk_space_variant_switch':   Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
     'random_sprites_pack_switch':  Switch(860,  120, set_randomize_sprites_packs, settings['random_sprites_pack']),
-    'custom_cursor_switch':        Switch(860,  70,  set_custom_cursor, not settings['custom_cursor']),
-    'show_units':                  Switch(860,  20,  set_show_units, settings['show_units']),
+    'custom_cursor_switch':        Switch(860,  70,  set_custom_cursor, not settings['custom_cursor'])
 }
+
 
 dialog_ui = {
     'confirm_button': Button(BASE_WINDOW_WIDTH - 80,  window.height - 170, window.close, ui_confirm_img),
@@ -424,27 +411,6 @@ blocks_transparency_setting_label = pyglet.text.Label(
     anchor_y  = 'center',
     batch     = fg_batch
 )
-disk_setting_label = pyglet.text.Label(
-    text      = 'Disk letter',
-    font_name = 'Press Start 2P',
-    font_size = 16,
-    color     = COL_NORM_VALUE,
-    x         = 910,
-    y         = 420,
-    anchor_y  = 'top',
-    batch     = fg_batch
-)
-disk_setting_letter = pyglet.text.Label(
-    text      = 'C:',
-    font_name = 'Press Start 2P',
-    font_size = 24,
-    color     = COL_NORM_VALUE,
-    x         = 975,
-    y         = 376,
-    anchor_x  = 'center',
-    anchor_y  = 'top',
-    batch     = fg_batch
-)
 update_interval_label_1 = pyglet.text.Label(
     text      = 'Shorter update',
     font_name = 'Press Start 2P',
@@ -505,16 +471,41 @@ default_cursor_label = pyglet.text.Label(
     anchor_y  = 'center',
     batch     = fg_batch
 )
-show_units_label = pyglet.text.Label(
-    text      = 'Show units',
-    font_name = 'Press Start 2P',
-    font_size = 16,
-    color     = COL_NORM_VALUE,
-    x         = 910,
-    y         = 40,
-    anchor_y  = 'center',
-    batch     = fg_batch
-)
+if is_windows:
+    ui['disk_selector_nav_left']  = Button( 910, 340, on_disk_nav_left,  ui_nav_left_img),
+    ui['disk_selector_nav_right'] = Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
+    ui['show_units']              = Switch( 860,  20, set_show_units,    settings['show_units'])
+    disk_setting_label = pyglet.text.Label(
+        text      = 'Disk letter',
+        font_name = 'Press Start 2P',
+        font_size = 16,
+        color     = COL_NORM_VALUE,
+        x         = 910,
+        y         = 420,
+        anchor_y  = 'top',
+        batch     = fg_batch
+    )
+    disk_setting_letter = pyglet.text.Label(
+        text      = 'C:',
+        font_name = 'Press Start 2P',
+        font_size = 24,
+        color     = COL_NORM_VALUE,
+        x         = 975,
+        y         = 376,
+        anchor_x  = 'center',
+        anchor_y  = 'top',
+        batch     = fg_batch
+    )
+    show_units_label = pyglet.text.Label(
+        text      = 'Show units',
+        font_name = 'Press Start 2P',
+        font_size = 16,
+        color     = COL_NORM_VALUE,
+        x         = 910,
+        y         = 40,
+        anchor_y  = 'center',
+        batch     = fg_batch
+    )
 
 uptime_title = pyglet.text.Label(
     text      = 'Uptime',
@@ -675,14 +666,11 @@ system_info = {
 }
 
 raw_system_info = {
-    'uptime':          -1,
-    'cpu':             -1,
-    'ram':             -1,
-    'used_disk_space': -1
+    'uptime':          -1.0,
+    'cpu':             -1.0,
+    'ram':             -1.0,
+    'used_disk_space': -1.0
 }
-
-
-kernel32 = windll.kernel32
 
 
 set_blocks_transparency(settings['blocks_transparency'] < 255)
@@ -719,11 +707,13 @@ def on_draw():
         disk_title.text = 'Used disk space (C:)'
     else:
         disk_title.text = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)'
-    disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
+    
+    if is_windows:
+        disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
     if not settings['show_units']:
         disk_label.text = system_info['disk']
     else:
-        disk_label.text = f'{system_info["disk_used"]}GB' if system_info["disk_used"] < 1024 else f'{round(system_info["disk_used"] / 1024, 1)}TB'
+        disk_label.text = f'{system_info["disk_used_space"]}GB' if raw_system_info["disk_used_space"] < 1024 else f'{round(raw_system_info["disk_used_space"] / 1024, 1)}TB'
 
     if raw_system_info['cpu'] < CPU_PBAR_WARN:
         cpu_label.color = COL_NORM_VALUE
@@ -798,8 +788,7 @@ def system_info_updater():
         sleep(0.02)
     while pyglet.app.event_loop.is_running:
 
-        seconds_uptime = kernel32.GetTickCount64()
-        seconds_uptime = int(str(seconds_uptime)[:-3])
+        seconds_uptime = int(get_uptime())
         mins, sec = divmod(seconds_uptime, 60)
         hour, mins = divmod(mins, 60)
         system_info['uptime'] = f'{hour:02}:{mins:02}:{sec:02}'
@@ -817,7 +806,7 @@ def system_info_updater():
         vmem_usage = virtual_memory().percent
         system_info['ram'] = f'{szfill(round(vmem_usage, 1))}%'
         raw_system_info['ram'] = vmem_usage / 100
-        system_info['ram_used']  = round(virtual_memory().used / 1024 / 1024 / 1024, 1)
+        system_info['ram_used']  = str(round(virtual_memory().used / 1024 / 1024 / 1024, 1))
         system_info['ram_total'] = str(round(virtual_memory().total / 1024 / 1024 / 1024, 1)).rstrip('.0')
         other_elements['ram_progress'].update_progress(vmem_usage / 100)
         if vmem_usage / 100 >= RAM_PBAR_WARN:
@@ -829,9 +818,13 @@ def system_info_updater():
             c_usage = disk_usage(f'{ascii_uppercase[settings["disk_index"]]}:\\')
             forced_c_selection = False
         except (FileNotFoundError, PermissionError):
-            c_usage = disk_usage('C:\\')
+            if system() != 'Windows':
+                disk_path = '/'
+            else:
+                disk_path = 'C:\\'
+            c_usage = disk_usage(disk_path)
             forced_c_selection = True
-        system_info['disk_used'] = round(c_usage.used / 1024 / 1024 / 1024, 1)
+        system_info['disk_used'] = str(round(c_usage.used / 1024 / 1024 / 1024, 1))
         if settings['disk_space_variant'] == 'used':
             system_info['disk'] = f'{szfill(round(c_usage.used / c_usage.total * 100, 1))}%'
         else:
