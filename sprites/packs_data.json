@@ -13,8 +13,8 @@
             "animated": "heart_anim.gif"
         },
         "disk": {
-            "static": "tiredness.png",
-            "animated": "tiredness_anim.gif"
+            "static": "darkness.png",
+            "animated": "darkness_anim.gif"
         }
     },
     {
@@ -31,8 +31,8 @@
             "animated": "shine_anim.gif"
         },
         "disk": {
-            "static": "tiredness.png",
-            "animated": "tiredness_anim.gif"
+            "static": "darkness.png",
+            "animated": "darkness_anim.gif"
         }
     }
 ]
