@@ -421,44 +421,28 @@ blocks_transparency_setting_label = pyglet.text.Label(
     anchor_y  = 'center',
     batch     = fg_batch
 )
-update_interval_label_1 = pyglet.text.Label(
-    text      = 'Shorter update',
+update_interval_label = pyglet.text.Label(
+    text      = 'Shorter update interval',
     font_name = 'Press Start 2P',
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
-    y         = 300,
+    y         = 285,
+    width     = 450,
     anchor_y  = 'center',
+    multiline = True,
     batch     = fg_batch
 )
-update_interval_label_2 = pyglet.text.Label(
-    text      = 'interval',
+show_free_space_label = pyglet.text.Label(
+    text      = 'Show free disk space instead of used',
     font_name = 'Press Start 2P',
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
-    y         = 270,
+    y         = 205,
+    width     = 450,
     anchor_y  = 'center',
-    batch     = fg_batch
-)
-show_free_space_label_1 = pyglet.text.Label(
-    text      = 'Show free disk space',
-    font_name = 'Press Start 2P',
-    font_size = 16,
-    color     = COL_NORM_VALUE,
-    x         = 910,
-    y         = 220,
-    anchor_y  = 'center',
-    batch     = fg_batch
-)
-show_free_space_label_2 = pyglet.text.Label(
-    text      = 'instead of used',
-    font_name = 'Press Start 2P',
-    font_size = 16,
-    color     = COL_NORM_VALUE,
-    x         = 910,
-    y         = 190,
-    anchor_y  = 'center',
+    multiline = True,
     batch     = fg_batch
 )
 default_cursor_label = pyglet.text.Label(
