@@ -47,7 +47,6 @@ default_settings = {
     'blocks_transparency': 255,
     'disk_space_variant': 'used',
     'custom_cursor': False,
-    'show_units': False,
 }
 try:
     makedirs(APP_DATA_ROOT)
@@ -230,10 +229,6 @@ def set_custom_cursor(state):
         window.set_mouse_cursor(cur_pointer)
     save_settings()
 
-def set_show_units(state):
-    settings['show_units'] = state
-    save_settings()
-
 def on_disk_nav_left():
     if settings['disk_index'] > 0:
         settings['disk_index'] -= 1
@@ -339,12 +334,12 @@ ui = {
     'window_minimize_button':      Button(BASE_WINDOW_WIDTH - 110, window.height - 60, window.minimize, ui_minimize_img),
     'settings_toggle_button':      Button(790,  20,  toggle_settings, ui_settings_img),
     'github_link':                 Button(1290, 610, open_github_repo, ui_link_img),
-    'animations_switch':           Switch(860,  540, set_animations_enabled, settings['enable_animations']),
-    'bg_animation_switch':         Switch(860,  490, set_bg_animation_enabled, settings['enable_bg_animation']),
-    'transparency_switch':         Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
-    'update_interval_switch':      Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
-    'disk_space_variant_switch':   Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
-    'custom_cursor_switch':        Switch(860,  70,  set_custom_cursor, not settings['custom_cursor'])
+    'animations_switch':           Switch(860,  540, set_animations_enabled,         settings['enable_animations']),
+    'bg_animation_switch':         Switch(860,  490, set_bg_animation_enabled,       settings['enable_bg_animation']),
+    'transparency_switch':         Switch(860,  440, set_blocks_transparency,        settings['blocks_transparency'] < 255),
+    'update_interval_switch':      Switch(860,  390, set_shorter_update_interval,    settings['shorter_update_interval']),
+    'disk_space_variant_switch':   Switch(860,  340, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
+    'custom_cursor_switch':        Switch(860,  290,  set_custom_cursor,          not settings['custom_cursor'])
 }
 
 
@@ -427,7 +422,7 @@ update_interval_label = pyglet.text.Label(
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
-    y         = 285,
+    y         = 410,
     width     = 450,
     anchor_y  = 'center',
     multiline = True,
@@ -439,7 +434,7 @@ show_free_space_label = pyglet.text.Label(
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
-    y         = 205,
+    y         = 360,
     width     = 450,
     anchor_y  = 'center',
     multiline = True,
@@ -451,21 +446,20 @@ default_cursor_label = pyglet.text.Label(
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
-    y         = 90,
+    y         = 310,
     anchor_y  = 'center',
     batch     = fg_batch
 )
 if is_windows:
-    ui['disk_selector_nav_left']  = Button( 910, 340, on_disk_nav_left,  ui_nav_left_img)
-    ui['disk_selector_nav_right'] = Button(1010, 340, on_disk_nav_right, ui_nav_right_img)
-    ui['show_units']              = Switch( 860,  20, set_show_units,    settings['show_units'])
+    ui['disk_selector_nav_left']  = Button( 910, 190, on_disk_nav_left,  ui_nav_left_img)
+    ui['disk_selector_nav_right'] = Button(1010, 190, on_disk_nav_right, ui_nav_right_img)
     disk_setting_label = pyglet.text.Label(
         text      = 'Disk letter',
         font_name = settings['font'],
         font_size = 16,
         color     = COL_NORM_VALUE,
         x         = 910,
-        y         = 420,
+        y         = 270,
         anchor_y  = 'top',
         batch     = fg_batch
     )
@@ -475,19 +469,9 @@ if is_windows:
         font_size = 24,
         color     = COL_NORM_VALUE,
         x         = 975,
-        y         = 376,
+        y         = 225,
         anchor_x  = 'center',
         anchor_y  = 'top',
-        batch     = fg_batch
-    )
-    show_units_label = pyglet.text.Label(
-        text      = 'Show units',
-        font_name = settings['font'],
-        font_size = 16,
-        color     = COL_NORM_VALUE,
-        x         = 910,
-        y         = 40,
-        anchor_y  = 'center',
         batch     = fg_batch
     )
 
@@ -683,10 +667,8 @@ def on_draw():
 
     uptime_label.text = system_info['uptime']
     cpu_label.text = system_info['cpu']
-    if not settings['show_units']:
-        ram_label.text = system_info['ram']
-    else:
-        ram_label.text = f'{system_info["ram_used"]}/{system_info["ram_total"]}GB'
+    ram_label.text = system_info['ram']
+
     if forced_c_selection:
         disk_title.text = 'Used disk space (C:)'
     else:
@@ -697,10 +679,7 @@ def on_draw():
     
     if is_windows:
         disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
-    if not settings['show_units']:
-        disk_label.text = system_info['disk']
-    else:
-        disk_label.text = f'{system_info["disk_used_space"]}GB' if raw_system_info["disk_used_space"] < 1024 else f'{round(raw_system_info["disk_used_space"] / 1024, 1)}TB'
+    disk_label.text = system_info['disk']
 
     if raw_system_info['cpu'] < CPU_PBAR_WARN:
         cpu_label.color = COL_NORM_VALUE
