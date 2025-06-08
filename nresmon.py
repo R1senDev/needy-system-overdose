@@ -5,12 +5,13 @@ from platform   import system
 from psutil     import cpu_percent, virtual_memory, disk_usage
 from string     import ascii_uppercase
 from typing     import Callable
-from random     import choice
 from json       import load, dump
 from time       import sleep
+from sys        import argv
 from os         import makedirs
 
-from plindf import is_windows, get_absolute_cursor_position, get_uptime, APP_DATA_ROOT, SETTINGS_PATH
+from core.characters import get_characters
+from core.plindf     import *
 
 import pyglet
 
@@ -44,7 +45,6 @@ default_settings = {
     'enable_bg_animation': False,
     'blocks_transparency': 255,
     'disk_space_variant': 'used',
-    'random_sprites_pack': False,
     'custom_cursor': False,
     'show_units': False,
 }
@@ -62,9 +62,8 @@ except OSError:
             with open(SETTINGS_PATH, 'w') as file:
                 dump(default_settings, file)
             break
-
-with open('sprites/packs_data.json', 'r') as packs_data_file:
-    packs_data = load(packs_data_file)
+if '-d' in argv:
+    settings = default_settings
 
 
 def szfill(num: int | float | str, before_dot: int = 2) -> str:
@@ -91,6 +90,24 @@ except Exception:
 
 window.set_location(screen.width // 2 - WIDE_WINDOW_WIDTH // 2, screen.height // 2 - window.height // 2)
 
+screen_refrate = round(screen.get_mode().rate, 2)
+
+
+print(
+    '',
+    '-' * 35,
+    f'- System: {system()}',
+    f'- Wine: {"detected / forced to" if is_wine else "undetected"}',
+    f'- Screen (default):',
+    f'\t- Resolution: {screen.width}x{screen.height}',
+    f'\t- Refresh rate: {screen_refrate} Hz',
+    '-' * 35,
+    sep = '\n',
+    end = '\n' * 2
+)
+
+print('\nAvailable characters:\n-', '\n- '.join(map(str, get_characters())))
+
 
 bg_batch             = pyglet.graphics.Batch()
 fg_batch             = pyglet.graphics.Batch()
@@ -103,23 +120,20 @@ anim_character_batch = pyglet.graphics.Batch()
 pyglet.font.add_directory('fonts/')
 press_start_2p_font = pyglet.font.load('Press Start 2P')
 
-if settings['random_sprites_pack']: pack = choice(packs_data)
-else: pack = packs_data[0]
-
 # Loading characters' sprites
-uptime_img      = pyglet.image.load(f'sprites/characters/{settings["character"]}/{pack["uptime"]["static"]}')
-cpu_usage_img   = pyglet.image.load(f'sprites/characters/{settings["character"]}/{pack["cpu"]["static"]}')
-ram_usage_img   = pyglet.image.load(f'sprites/characters/{settings["character"]}/{pack["ram"]["static"]}')
-disk_usage_img  = pyglet.image.load(f'sprites/characters/{settings["character"]}/{pack["disk"]["static"]}')
-uptime_anim     = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/{pack["uptime"]["animated"]}')
-cpu_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/{pack["cpu"]["animated"]}')
-ram_usage_anim  = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/{pack["ram"]["animated"]}')
-disk_usage_anim = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/{pack["disk"]["animated"]}')
-question_anim   = pyglet.image.load_animation(f'sprites/characters/{settings["character"]}/question_anim.gif')
+uptime_img      = pyglet.image.load          (f'characters/{settings["character"]}/static/uptime.png')
+cpu_usage_img   = pyglet.image.load          (f'characters/{settings["character"]}/static/cpu.png')
+ram_usage_img   = pyglet.image.load          (f'characters/{settings["character"]}/static/ram.png')
+disk_usage_img  = pyglet.image.load          (f'characters/{settings["character"]}/static/disk.png')
+uptime_anim     = pyglet.image.load_animation(f'characters/{settings["character"]}/animated/uptime.gif')
+cpu_usage_anim  = pyglet.image.load_animation(f'characters/{settings["character"]}/animated/cpu.gif')
+ram_usage_anim  = pyglet.image.load_animation(f'characters/{settings["character"]}/animated/ram.gif')
+disk_usage_anim = pyglet.image.load_animation(f'characters/{settings["character"]}/animated/disk.gif')
+question_anim   = pyglet.image.load_animation(f'characters/{settings["character"]}/animated/question.gif')
 
 # Loading cursors' sprites
-cur_normal_img  = pyglet.image.load('cursors/cursor_normal.png')
-cur_pointer_img = pyglet.image.load('cursors/cursor_pointer.png')
+cur_normal_img  = pyglet.image.load('sprites/cursors/cursor_normal.png')
+cur_pointer_img = pyglet.image.load('sprites/cursors/cursor_pointer.png')
 
 # Gathering default OS cursor
 cur_default_normal  = window.CURSOR_DEFAULT
@@ -133,19 +147,19 @@ icon64_img  = pyglet.image.load('sprites/icon64.png')
 icon128_img = pyglet.image.load('sprites/icon128.png')
 window.set_icon(icon32_img, icon64_img, icon128_img) # type: ignore
 
-bg_tile_img  = pyglet.image.load('sprites/bg_tile.png')
+bg_tile_img  = pyglet.image.load('sprites/ui/bg_tile.png')
 bg_tiles = [[pyglet.sprite.Sprite(bg_tile_img, x * bg_tile_img.width, y * bg_tile_img.height, batch = bg_batch) for x in range((WIDE_WINDOW_WIDTH // bg_tile_img.width) + 2)] for y in range((window.height // bg_tile_img.height) + 1)]
 
-ui_close_img            = pyglet.image.load('ui/close_btn.png')
-ui_confirm_img          = pyglet.image.load('ui/confirm_btn.png')
-ui_cancel_img           = pyglet.image.load('ui/cancel_btn.png')
-ui_minimize_img         = pyglet.image.load('ui/minimize_btn.png')
-ui_checkbox_empty_img   = pyglet.image.load('ui/checkbox_empty.png')
-ui_checkbox_checked_img = pyglet.image.load('ui/checkbox_checked.png')
-ui_nav_left_img         = pyglet.image.load('ui/nav_left.png')
-ui_nav_right_img        = pyglet.image.load('ui/nav_right.png')
-ui_settings_img         = pyglet.image.load('ui/settings_btn.png')
-ui_link_img             = pyglet.image.load('ui/link_btn.png')
+ui_close_img            = pyglet.image.load('sprites/ui/close_btn.png')
+ui_confirm_img          = pyglet.image.load('sprites/ui/confirm_btn.png')
+ui_cancel_img           = pyglet.image.load('sprites/ui/cancel_btn.png')
+ui_minimize_img         = pyglet.image.load('sprites/ui/minimize_btn.png')
+ui_checkbox_empty_img   = pyglet.image.load('sprites/ui/checkbox_empty.png')
+ui_checkbox_checked_img = pyglet.image.load('sprites/ui/checkbox_checked.png')
+ui_nav_left_img         = pyglet.image.load('sprites/ui/nav_left.png')
+ui_nav_right_img        = pyglet.image.load('sprites/ui/nav_right.png')
+ui_settings_img         = pyglet.image.load('sprites/ui/settings_btn.png')
+ui_link_img             = pyglet.image.load('sprites/ui/link_btn.png')
 
 icon_sprite            = pyglet.sprite.Sprite(icon64_img,      20, window.height - 72,  batch = fg_batch)
 uptime_sprite          = pyglet.sprite.Sprite(uptime_img,      20, 440,                 batch = character_batch)
@@ -205,10 +219,6 @@ def set_shorter_update_interval(state):
 
 def set_disk_space_variant_to_free(state):
     settings['disk_space_variant'] = 'free' if state else 'used'
-    save_settings()
-
-def set_randomize_sprites_packs(state):
-    settings['random_sprites_pack'] = state
     save_settings()
 
 def set_custom_cursor(state):
@@ -333,7 +343,6 @@ ui = {
     'transparency_switch':         Switch(860,  440, set_blocks_transparency, settings['blocks_transparency'] < 255),
     'update_interval_switch':      Switch(860,  265, set_shorter_update_interval, settings['shorter_update_interval']),
     'disk_space_variant_switch':   Switch(860,  185, set_disk_space_variant_to_free, settings['disk_space_variant'] == 'free'),
-    'random_sprites_pack_switch':  Switch(860,  120, set_randomize_sprites_packs, settings['random_sprites_pack']),
     'custom_cursor_switch':        Switch(860,  70,  set_custom_cursor, not settings['custom_cursor'])
 }
 
@@ -361,7 +370,7 @@ window_title = pyglet.text.Label(
     batch     = fg_batch
 )
 window_title_version = pyglet.text.Label(
-    text      = 'v1.3.1b',
+    text      = 'v2.1.0b',
     font_name = 'Press Start 2P',
     font_size = 10,
     color     = COL_PINK_TEXT,
@@ -383,7 +392,7 @@ info_label = pyglet.text.Label(
     batch     = fg_batch
 )
 animations_setting_label = pyglet.text.Label(
-    text      = 'Animations',
+    text      = 'Animated characters',
     font_name = 'Press Start 2P',
     font_size = 16,
     color     = COL_NORM_VALUE,
@@ -393,7 +402,7 @@ animations_setting_label = pyglet.text.Label(
     batch     = fg_batch
 )
 bg_animation_setting_label = pyglet.text.Label(
-    text      = 'Animate background',
+    text      = 'Animated background',
     font_name = 'Press Start 2P',
     font_size = 16,
     color     = COL_NORM_VALUE,
@@ -449,16 +458,6 @@ show_free_space_label_2 = pyglet.text.Label(
     color     = COL_NORM_VALUE,
     x         = 910,
     y         = 190,
-    anchor_y  = 'center',
-    batch     = fg_batch
-)
-randomize_packs_label = pyglet.text.Label(
-    text      = 'Random sprites pack',
-    font_name = 'Press Start 2P',
-    font_size = 16,
-    color     = COL_NORM_VALUE,
-    x         = 910,
-    y         = 140,
     anchor_y  = 'center',
     batch     = fg_batch
 )
@@ -708,6 +707,9 @@ def on_draw():
         disk_title.text = 'Used disk space (C:)'
     else:
         disk_title.text = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)'
+
+    if not is_windows:
+        disk_title.text = 'Used disk space (/)'
     
     if is_windows:
         disk_setting_letter.text = f'{ascii_uppercase[settings["disk_index"]]}:'
@@ -819,10 +821,10 @@ def system_info_updater():
             c_usage = disk_usage(f'{ascii_uppercase[settings["disk_index"]]}:\\')
             forced_c_selection = False
         except (FileNotFoundError, PermissionError):
-            if system() != 'Windows':
-                disk_path = '/'
-            else:
+            if is_windows:
                 disk_path = 'C:\\'
+            else:
+                disk_path = '/'
             c_usage = disk_usage(disk_path)
             forced_c_selection = True
         system_info['disk_used'] = str(round(c_usage.used / 1024 / 1024 / 1024, 1))
@@ -839,13 +841,14 @@ def system_info_updater():
 
         sleep(0.5 if settings['shorter_update_interval'] else 1)
 
+if __name__ == '__main__':
 
-system_info_updater_thread = Thread(
-    target = system_info_updater,
-    args   = (),
-    name   = 'SystemInfoUpdater',
-    daemon = True
-)
-system_info_updater_thread.start()
+    system_info_updater_thread = Thread(
+        target = system_info_updater,
+        args   = (),
+        name   = 'SystemInfoUpdater',
+        daemon = True
+    )
+    system_info_updater_thread.start()
 
-pyglet.app.run()
+    pyglet.app.run(1 / screen_refrate)
