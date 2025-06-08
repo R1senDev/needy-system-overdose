@@ -39,6 +39,7 @@ bg_offset = 0
 
 default_settings = {
     'character': 'kangel',
+    'font': 'Press Start 2P',
     'enable_animations': True,
     'disk_index': 2,
     'shorter_update_interval': False,
@@ -118,7 +119,7 @@ anim_character_batch = pyglet.graphics.Batch()
 
 # Loading font
 pyglet.font.add_directory('fonts/')
-press_start_2p_font = pyglet.font.load('Press Start 2P')
+press_start_2p_font = pyglet.font.load(settings['font'])
 
 # Loading characters' sprites
 uptime_img      = pyglet.image.load          (f'characters/{settings["character"]}/static/uptime.png')
@@ -360,9 +361,8 @@ other_elements = {
 
 window_title = pyglet.text.Label(
     text      = 'NeedySystemOverdose',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
-    italic    = True,
     color     = COL_NORM_VALUE,
     x         = 94,
     y         = window.height - 40,
@@ -371,7 +371,7 @@ window_title = pyglet.text.Label(
 )
 window_title_version = pyglet.text.Label(
     text      = 'v2.1.0b',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 10,
     color     = COL_PINK_TEXT,
     x         = BASE_WINDOW_WIDTH - 120,
@@ -383,7 +383,7 @@ window_title_version = pyglet.text.Label(
 
 info_label = pyglet.text.Label(
     text      = 'project by R1senDev',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 860,
@@ -393,7 +393,7 @@ info_label = pyglet.text.Label(
 )
 animations_setting_label = pyglet.text.Label(
     text      = 'Animated characters',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
@@ -403,7 +403,7 @@ animations_setting_label = pyglet.text.Label(
 )
 bg_animation_setting_label = pyglet.text.Label(
     text      = 'Animated background',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
@@ -413,7 +413,7 @@ bg_animation_setting_label = pyglet.text.Label(
 )
 blocks_transparency_setting_label = pyglet.text.Label(
     text      = 'Transparent blocks',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
@@ -423,7 +423,7 @@ blocks_transparency_setting_label = pyglet.text.Label(
 )
 update_interval_label = pyglet.text.Label(
     text      = 'Shorter update interval',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
@@ -435,7 +435,7 @@ update_interval_label = pyglet.text.Label(
 )
 show_free_space_label = pyglet.text.Label(
     text      = 'Show free disk space instead of used',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
@@ -447,7 +447,7 @@ show_free_space_label = pyglet.text.Label(
 )
 default_cursor_label = pyglet.text.Label(
     text      = 'Default cursor',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_NORM_VALUE,
     x         = 910,
@@ -461,7 +461,7 @@ if is_windows:
     ui['show_units']              = Switch( 860,  20, set_show_units,    settings['show_units'])
     disk_setting_label = pyglet.text.Label(
         text      = 'Disk letter',
-        font_name = 'Press Start 2P',
+        font_name = settings['font'],
         font_size = 16,
         color     = COL_NORM_VALUE,
         x         = 910,
@@ -471,7 +471,7 @@ if is_windows:
     )
     disk_setting_letter = pyglet.text.Label(
         text      = 'C:',
-        font_name = 'Press Start 2P',
+        font_name = settings['font'],
         font_size = 24,
         color     = COL_NORM_VALUE,
         x         = 975,
@@ -482,7 +482,7 @@ if is_windows:
     )
     show_units_label = pyglet.text.Label(
         text      = 'Show units',
-        font_name = 'Press Start 2P',
+        font_name = settings['font'],
         font_size = 16,
         color     = COL_NORM_VALUE,
         x         = 910,
@@ -493,7 +493,7 @@ if is_windows:
 
 uptime_title = pyglet.text.Label(
     text      = 'Uptime',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_PINK_TEXT,
     x         = 200,
@@ -503,7 +503,7 @@ uptime_title = pyglet.text.Label(
 )
 uptime_label = pyglet.text.Label(
     text      = 'N/A',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 50,
     color     = COL_NORM_VALUE,
     x         = 200,
@@ -512,7 +512,7 @@ uptime_label = pyglet.text.Label(
 )
 cpu_title = pyglet.text.Label(
     text      = 'CPU usage',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_PINK_TEXT,
     x         = 200,
@@ -522,7 +522,7 @@ cpu_title = pyglet.text.Label(
 )
 cpu_label = pyglet.text.Label(
     text      = 'N/A',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 50,
     color     = COL_NORM_VALUE,
     x         = 200,
@@ -531,7 +531,7 @@ cpu_label = pyglet.text.Label(
 )
 ram_title = pyglet.text.Label(
     text      = 'RAM usage',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_PINK_TEXT,
     x         = 200,
@@ -541,7 +541,7 @@ ram_title = pyglet.text.Label(
 )
 ram_label = pyglet.text.Label(
     text      = 'N/A',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 50,
     color     = COL_NORM_VALUE,
     x         = 200,
@@ -550,7 +550,7 @@ ram_label = pyglet.text.Label(
 )
 disk_title = pyglet.text.Label(
     text      = f'{"Free" if settings["disk_space_variant"] == "free" else "Used"} disk space ({ascii_uppercase[settings["disk_index"]]}:)',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 16,
     color     = COL_PINK_TEXT,
     x         = 200,
@@ -560,7 +560,7 @@ disk_title = pyglet.text.Label(
 )
 disk_label = pyglet.text.Label(
     text      = 'N/A',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 50,
     color     = COL_NORM_VALUE,
     x         = 200,
@@ -628,7 +628,7 @@ dialog_inner_container = pyglet.shapes.Rectangle(
 )
 dialog_label = pyglet.text.Label(
     text      = 'Are you sure you want to exit?',
-    font_name = 'Press Start 2P',
+    font_name = settings['font'],
     font_size = 14,
     color     = COL_NORM_VALUE,
     x         = dialog_inner_container.x + dialog_inner_container.width - 10,
