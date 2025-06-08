@@ -4,7 +4,7 @@ from threading  import Thread
 from platform   import system
 from psutil     import cpu_percent, virtual_memory, disk_usage
 from string     import ascii_uppercase
-from typing     import Callable
+from typing     import Any, Callable
 from json       import load, dump
 from time       import sleep
 from sys        import argv
@@ -315,7 +315,7 @@ class Switch:
 
 class Button:
 
-    def __init__(self, x: int, y: int, on_click: Callable, img) -> None:
+    def __init__(self, x: int, y: int, on_click: Callable[[], Any], img) -> None:
         self.x = x
         self.y = y
         self.on_click = on_click
@@ -456,8 +456,8 @@ default_cursor_label = pyglet.text.Label(
     batch     = fg_batch
 )
 if is_windows:
-    ui['disk_selector_nav_left']  = Button( 910, 340, on_disk_nav_left,  ui_nav_left_img),
-    ui['disk_selector_nav_right'] = Button(1010, 340, on_disk_nav_right, ui_nav_right_img),
+    ui['disk_selector_nav_left']  = Button( 910, 340, on_disk_nav_left,  ui_nav_left_img)
+    ui['disk_selector_nav_right'] = Button(1010, 340, on_disk_nav_right, ui_nav_right_img)
     ui['show_units']              = Switch( 860,  20, set_show_units,    settings['show_units'])
     disk_setting_label = pyglet.text.Label(
         text      = 'Disk letter',
