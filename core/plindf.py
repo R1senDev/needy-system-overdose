@@ -3,14 +3,29 @@ PLatform INDependent Functions
 '''
 
 # Shared stuff
-from platform import system
-from getpass  import getuser
-from classes  import Point
-from ctypes   import byref
-from re       import search
+from core.classes import Point
+from platform     import system
+from getpass      import getuser
+from ctypes       import byref
+from sys          import argv
+from re           import search
+from os           import environ
 
 
 is_windows = system() == 'Windows'
+is_wine = 'WINEPREFIX' in environ
+
+try:
+    with open('/proc/self/maps', 'r') as maps:
+        for line in maps:
+            if 'wine' in line.lower():
+                is_wine = True
+                break
+except FileNotFoundError:
+    ...
+
+if '--force-wine-compat' in argv:
+    is_wine = True
 
 
 match system():
