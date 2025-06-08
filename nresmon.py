@@ -752,12 +752,16 @@ def system_info_updater():
 
     while not pyglet.app.event_loop.is_running:
         sleep(0.02)
+        
     while pyglet.app.event_loop.is_running:
 
         seconds_uptime = int(get_uptime())
         mins, sec = divmod(seconds_uptime, 60)
         hour, mins = divmod(mins, 60)
-        system_info['uptime'] = f'{hour:02}:{mins:02}:{sec:02}'
+        if hour < 999 or '--no-uptime-wrapping' in argv:
+            system_info['uptime'] = f'{hour:02}:{mins:02}:{sec:02}'
+        else:
+            system_info['uptime'] = f'{hour} hrs'
         raw_system_info['uptime'] = seconds_uptime
 
         cpu_usage = cpu_percent()
